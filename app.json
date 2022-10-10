@@ -2,6 +2,7 @@
   "expo": {
     "name": "react-native-course",
     "slug": "react-native-course",
+    "owner": "aylabasha",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +19,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aylabasha.reactnativecourse"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +30,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c9f54972-637f-48b2-bf86-5851da03fc4f"
+      }
     }
   }
 }
