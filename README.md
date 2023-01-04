@@ -3,9 +3,9 @@
 ## Made with React Native
 
 ## Features
-* Add Tasks to your list 
+* Add tasks to your list 
 * Check tasks off your list
 * See your completed tasks 
-* Delete tasks from Completed list
+* Delete tasks from the 'completed' list
 
 ### Exercise completed by Ayla Basha
