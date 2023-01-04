@@ -10,11 +10,12 @@ import {
   ScrollView,
 } from "react-native";
 import Task from "./components/Task";
+// import icons
+import { Ionicons } from "@expo/vector-icons";
 
 export default function App() {
   const [task, setTask] = useState();
   const [taskItems, setTaskItems] = useState([]);
-  const [tomorrowTask, setTomorrowTask] = useState();
   const [completedTask, setCompletedTask] = useState([]);
 
   const handleAddTask = () => {
@@ -25,12 +26,18 @@ export default function App() {
 
   const completeTask = (index) => {
     let itemsCopy = [...taskItems];
-    let completedTaskCopy = [itemsCopy.pop()];
+    let completedTaskCopy = [itemsCopy[index]];
     itemsCopy.splice(index, 1);
     setTaskItems(itemsCopy);
-    setCompletedTask([completedTaskCopy]);
+    setCompletedTask([...completedTask, completedTaskCopy]);
   };
 
+  // clear task from completedTask array
+  const clearTask = (index) => {
+    let itemsCopy = [...completedTask];
+    itemsCopy.splice(index, 1);
+    setCompletedTask(itemsCopy);
+  };
 
 
   return (
@@ -47,7 +54,7 @@ export default function App() {
           <Text style={styles.sectionTitle}>Today's tasks</Text>
           <View style={styles.items}>
             {/* This is where the tasks will go! */}
-            {taskItems.map((item, index) => {
+            {taskItems?.map((item, index) => {
               return (
                 <TouchableOpacity
                   key={index}
@@ -64,11 +71,11 @@ export default function App() {
           <Text style={styles.sectionTitle}>Completed tasks</Text>
           <View style={styles.items}>
             {/* This is where the tasks will go! */}
-            {completedTask.map((item, index) => {
+            {completedTask?.map((item, index) => {
               return (
                 <TouchableOpacity
                   key={index}
-                  onPress={() => completeTask(index)}
+                  onPress={() => clearTask(index)}
                 >
                   <Task text={item} />
                 </TouchableOpacity>
@@ -92,13 +99,21 @@ export default function App() {
         />
         <TouchableOpacity onPress={() => handleAddTask()}>
           <View style={styles.addWrapper}>
-            <Text style={styles.addText}>+</Text>
+            <Text style={styles.addText}>
+              <Ionicons name="ios-add" size={24} color="black" />
+
+            </Text>
           </View>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
   );
 }
+
+<style>
+  @import
+  url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=League+Spartan:wght@100;300;400;500;600;700;800;900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sulphur+Point:wght@300;400&display=swap');
+</style>;
 
 const styles = StyleSheet.create({
   container: {
@@ -143,5 +158,5 @@ const styles = StyleSheet.create({
     borderColor: "#C0C0C0",
     borderWidth: 1,
   },
-  addText: {},
+  addText: { color: "#808080" },
 });
