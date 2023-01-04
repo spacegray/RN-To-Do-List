@@ -28,8 +28,10 @@ export default function App() {
     let completedTaskCopy = [itemsCopy.pop()];
     itemsCopy.splice(index, 1);
     setTaskItems(itemsCopy);
-    setCompletedTask([...completedTaskCopy]);
+    setCompletedTask([completedTaskCopy]);
   };
+
+
 
   return (
     <View style={styles.container}>
