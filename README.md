@@ -1,5 +1,11 @@
-# To Do List App
+# Simple To Do List App
 
 ## Made with React Native
 
-### This is a Tutorial course completed by Ayla Basha
+## Features
+* Add tasks to your list 
+* Check tasks off your list
+* See your completed tasks 
+* Delete tasks from the 'completed' list
+
+### Exercise completed by Ayla Basha
