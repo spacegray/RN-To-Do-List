@@ -2,4 +2,10 @@
 
 ## Made with React Native
 
-### This is a Tutorial course completed by Ayla Basha
+## Features
+* Add Tasks to your list 
+* Check tasks off your list
+* See your completed tasks 
+* Delete tasks from Completed list
+
+### Excercise completed by Ayla Basha
