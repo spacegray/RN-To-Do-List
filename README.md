@@ -1,4 +1,4 @@
-# To Do List App
+# Simple To Do List App
 
 ## Made with React Native
 
@@ -8,4 +8,4 @@
 * See your completed tasks 
 * Delete tasks from Completed list
 
-### Excercise completed by Ayla Basha
+### Exercise completed by Ayla Basha
