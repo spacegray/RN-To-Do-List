@@ -10,10 +10,10 @@ import {
   ScrollView,
 } from "react-native";
 import Task from "./components/Task";
-// import icons
 import { Ionicons } from "@expo/vector-icons";
 
 export default function App() {
+  // const colorScheme = useColorScheme();
   const [task, setTask] = useState();
   const [taskItems, setTaskItems] = useState([]);
   const [completedTask, setCompletedTask] = useState([]);
@@ -51,24 +51,26 @@ export default function App() {
       >
         {/* Today's Tasks */}
         <View style={styles.tasksWrapper}>
-          <Text style={styles.sectionTitle}>Today's tasks</Text>
-          <View style={styles.items}>
-            {/* This is where the tasks will go! */}
-            {taskItems?.map((item, index) => {
-              return (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => completeTask(index)}
-                >
-                  <Task text={item} />
-                </TouchableOpacity>
-              );
-            })}
+          <Text style={styles.sectionTitle}>Today's Tasks</Text>
+          <View style={styles.itemContainer}>
+            <View style={styles.items}>
+              {/* This is where the tasks will go! */}
+              {taskItems?.map((item, index) => {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => completeTask(index)}
+                  >
+                    <Task text={item} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         </View>
 
         <View style={styles.tasksWrapper}>
-          <Text style={styles.sectionTitle}>Completed tasks</Text>
+          <Text style={styles.sectionTitle}>Completed Tasks</Text>
           <View style={styles.items}>
             {/* This is where the tasks will go! */}
             {completedTask?.map((item, index) => {
@@ -110,15 +112,10 @@ export default function App() {
   );
 }
 
-<style>
-  @import
-  url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=League+Spartan:wght@100;300;400;500;600;700;800;900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sulphur+Point:wght@300;400&display=swap');
-</style>;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E8EAED",
+    backgroundColor: "#d8e6fd",
   },
   tasksWrapper: {
     paddingTop: 80,
@@ -127,9 +124,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "#232528",
+    // fontFamily: "Anybody",
+  },
+  itemContainer: {
+    marginTop: 10,
+    // BorderColor: "#F0FFF0",
+    // borderWidth: 1,
   },
   items: {
     marginTop: 30,
+   
   },
   writeTaskWrapper: {
     position: "absolute",
