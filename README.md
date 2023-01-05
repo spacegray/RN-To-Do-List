@@ -1,6 +1,6 @@
 # Simple To Do List App
 
-## Made with React Native
+## Made with React Native, Swift, and C++
 
 ## Features
 * Add tasks to your list 
