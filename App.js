@@ -11,9 +11,18 @@ import {
 } from "react-native";
 import Task from "./components/Task";
 import { Ionicons } from "@expo/vector-icons";
+// import { useFonts } from "expo-font";
 
 export default function App() {
   // const colorScheme = useColorScheme();
+
+  // const [loaded] = useFonts({
+  //   Anybody: require("./assets/fonts/Anybody.ttf"),
+  // });
+
+  // if (!loaded) {
+  //   return null;
+  // }
   const [task, setTask] = useState();
   const [taskItems, setTaskItems] = useState([]);
   const [completedTask, setCompletedTask] = useState([]);
@@ -125,7 +134,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#232528",
-    // fontFamily: "Anybody",
+    fontFamily: "Anybody-Regular",
   },
   itemContainer: {
     marginTop: 10,
