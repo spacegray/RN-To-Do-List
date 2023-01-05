@@ -15,21 +15,6 @@
 		96905EF65AED1B983A6B3ABC /* libPods-reactnativecourse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-reactnativecourse.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		A64781DC4C4C403CBFEAF3C1 /* Anybody-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D3704F20CB584820AAB05A95 /* Anybody-Black.ttf */; };
-		2F3B8F158DDA4976880A00E3 /* Anybody-BlackItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5638421DF0F44BBA9FF8A5BA /* Anybody-BlackItalic.ttf */; };
-		F3B84774B2A745DDA8485620 /* Anybody-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D2386F41F34C2F8B0562C1 /* Anybody-Bold.ttf */; };
-		DED36A2CC0E8488B94DB0B1B /* Anybody-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F85DC286F0AD4BEAB0A7BD97 /* Anybody-BoldItalic.ttf */; };
-		A2DC3302CF8B49A0B2303400 /* Anybody-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 11ED5D615DF942E39549F857 /* Anybody-ExtraBold.ttf */; };
-		09B411D247CE4B2287E54603 /* Anybody-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 241E83B57BD74B6492344DCC /* Anybody-ExtraBoldItalic.ttf */; };
-		1261C09B100E4675BAB15597 /* Anybody-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 168741960893494BA79663DF /* Anybody-ExtraLightItalic.ttf */; };
-		DE6A1D23D0CF4A318D7FACA2 /* Anybody-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F70E85F3AABC43099B0706B5 /* Anybody-Italic.ttf */; };
-		54E9626A07C44DC385954F4B /* Anybody-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BA3CAAF506254A1FB84EA8A3 /* Anybody-Light.ttf */; };
-		DB41BDF5770C43ED81941250 /* Anybody-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DBB6D254354149B1A0E330A6 /* Anybody-LightItalic.ttf */; };
-		78D1D952C1B048FC82C51366 /* Anybody-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B33EDBB5C8CC41178F58FEDD /* Anybody-Medium.ttf */; };
-		24E747C098D24A21AB62F614 /* Anybody-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F5D91C3D56254D9CA46612F7 /* Anybody-MediumItalic.ttf */; };
-		81A77CA5BEA749F28835AA4E /* Anybody-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AFFEAFA5CDDB4EC6950249FC /* Anybody-Regular.ttf */; };
-		2B075C64432D413A811079EB /* Anybody-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 735A27BDEE834A13BC4761F2 /* Anybody-SemiBold.ttf */; };
-		644E68B8748B40A299B5ABE7 /* Anybody-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 74B9156B79374EAAB7C17825 /* Anybody-SemiBoldItalic.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,21 +33,6 @@
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-reactnativecourse/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		D3704F20CB584820AAB05A95 /* Anybody-Black.ttf */ = {isa = PBXFileReference; name = "Anybody-Black.ttf"; path = "../assets/fonts/Anybody-Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		5638421DF0F44BBA9FF8A5BA /* Anybody-BlackItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-BlackItalic.ttf"; path = "../assets/fonts/Anybody-BlackItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		50D2386F41F34C2F8B0562C1 /* Anybody-Bold.ttf */ = {isa = PBXFileReference; name = "Anybody-Bold.ttf"; path = "../assets/fonts/Anybody-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		F85DC286F0AD4BEAB0A7BD97 /* Anybody-BoldItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-BoldItalic.ttf"; path = "../assets/fonts/Anybody-BoldItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		11ED5D615DF942E39549F857 /* Anybody-ExtraBold.ttf */ = {isa = PBXFileReference; name = "Anybody-ExtraBold.ttf"; path = "../assets/fonts/Anybody-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		241E83B57BD74B6492344DCC /* Anybody-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-ExtraBoldItalic.ttf"; path = "../assets/fonts/Anybody-ExtraBoldItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		168741960893494BA79663DF /* Anybody-ExtraLightItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-ExtraLightItalic.ttf"; path = "../assets/fonts/Anybody-ExtraLightItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		F70E85F3AABC43099B0706B5 /* Anybody-Italic.ttf */ = {isa = PBXFileReference; name = "Anybody-Italic.ttf"; path = "../assets/fonts/Anybody-Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		BA3CAAF506254A1FB84EA8A3 /* Anybody-Light.ttf */ = {isa = PBXFileReference; name = "Anybody-Light.ttf"; path = "../assets/fonts/Anybody-Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		DBB6D254354149B1A0E330A6 /* Anybody-LightItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-LightItalic.ttf"; path = "../assets/fonts/Anybody-LightItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		B33EDBB5C8CC41178F58FEDD /* Anybody-Medium.ttf */ = {isa = PBXFileReference; name = "Anybody-Medium.ttf"; path = "../assets/fonts/Anybody-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		F5D91C3D56254D9CA46612F7 /* Anybody-MediumItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-MediumItalic.ttf"; path = "../assets/fonts/Anybody-MediumItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		AFFEAFA5CDDB4EC6950249FC /* Anybody-Regular.ttf */ = {isa = PBXFileReference; name = "Anybody-Regular.ttf"; path = "../assets/fonts/Anybody-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		735A27BDEE834A13BC4761F2 /* Anybody-SemiBold.ttf */ = {isa = PBXFileReference; name = "Anybody-SemiBold.ttf"; path = "../assets/fonts/Anybody-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		74B9156B79374EAAB7C17825 /* Anybody-SemiBoldItalic.ttf */ = {isa = PBXFileReference; name = "Anybody-SemiBoldItalic.ttf"; path = "../assets/fonts/Anybody-SemiBoldItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,21 +140,6 @@
 		AF2F4C162455493B8D2CD3D7 /* Resources */ = {
 			isa = "PBXGroup";
 			children = (
-				D3704F20CB584820AAB05A95 /* Anybody-Black.ttf */,
-				5638421DF0F44BBA9FF8A5BA /* Anybody-BlackItalic.ttf */,
-				50D2386F41F34C2F8B0562C1 /* Anybody-Bold.ttf */,
-				F85DC286F0AD4BEAB0A7BD97 /* Anybody-BoldItalic.ttf */,
-				11ED5D615DF942E39549F857 /* Anybody-ExtraBold.ttf */,
-				241E83B57BD74B6492344DCC /* Anybody-ExtraBoldItalic.ttf */,
-				168741960893494BA79663DF /* Anybody-ExtraLightItalic.ttf */,
-				F70E85F3AABC43099B0706B5 /* Anybody-Italic.ttf */,
-				BA3CAAF506254A1FB84EA8A3 /* Anybody-Light.ttf */,
-				DBB6D254354149B1A0E330A6 /* Anybody-LightItalic.ttf */,
-				B33EDBB5C8CC41178F58FEDD /* Anybody-Medium.ttf */,
-				F5D91C3D56254D9CA46612F7 /* Anybody-MediumItalic.ttf */,
-				AFFEAFA5CDDB4EC6950249FC /* Anybody-Regular.ttf */,
-				735A27BDEE834A13BC4761F2 /* Anybody-SemiBold.ttf */,
-				74B9156B79374EAAB7C17825 /* Anybody-SemiBoldItalic.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -253,21 +208,6 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				A64781DC4C4C403CBFEAF3C1 /* Anybody-Black.ttf in Resources */,
-				2F3B8F158DDA4976880A00E3 /* Anybody-BlackItalic.ttf in Resources */,
-				F3B84774B2A745DDA8485620 /* Anybody-Bold.ttf in Resources */,
-				DED36A2CC0E8488B94DB0B1B /* Anybody-BoldItalic.ttf in Resources */,
-				A2DC3302CF8B49A0B2303400 /* Anybody-ExtraBold.ttf in Resources */,
-				09B411D247CE4B2287E54603 /* Anybody-ExtraBoldItalic.ttf in Resources */,
-				1261C09B100E4675BAB15597 /* Anybody-ExtraLightItalic.ttf in Resources */,
-				DE6A1D23D0CF4A318D7FACA2 /* Anybody-Italic.ttf in Resources */,
-				54E9626A07C44DC385954F4B /* Anybody-Light.ttf in Resources */,
-				DB41BDF5770C43ED81941250 /* Anybody-LightItalic.ttf in Resources */,
-				78D1D952C1B048FC82C51366 /* Anybody-Medium.ttf in Resources */,
-				24E747C098D24A21AB62F614 /* Anybody-MediumItalic.ttf in Resources */,
-				81A77CA5BEA749F28835AA4E /* Anybody-Regular.ttf in Resources */,
-				2B075C64432D413A811079EB /* Anybody-SemiBold.ttf in Resources */,
-				644E68B8748B40A299B5ABE7 /* Anybody-SemiBoldItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
