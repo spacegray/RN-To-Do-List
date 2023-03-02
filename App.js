@@ -1,113 +1,86 @@
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
   StyleSheet,
   Text,
   View,
   TextInput,
   TouchableOpacity,
-  Keyboard,
   ScrollView,
 } from "react-native";
-import Task from "./components/Task";
-import { Ionicons } from "@expo/vector-icons";
+import RandomTaskButton from "./components/RandomTaskButton";
 
 export default function App() {
-
-  const [task, setTask] = useState();
-  const [taskItems, setTaskItems] = useState([]);
-  const [completedTask, setCompletedTask] = useState([]);
+  const [task, setTask] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
 
   const handleAddTask = () => {
-    Keyboard.dismiss();
-    setTaskItems([...taskItems, task]);
-    setTask(null);
+    if (task.length > 0) {
+      setTasks([...tasks, task]);
+      setTask("");
+    }
   };
 
-  const completeTask = (index) => {
-    let itemsCopy = [...taskItems];
-    let completedTaskCopy = [itemsCopy[index]];
-    itemsCopy.splice(index, 1);
-    setTaskItems(itemsCopy);
-    setCompletedTask([...completedTask, completedTaskCopy]);
+  const handleCompleteTask = (index) => {
+    const task = tasks[index];
+    setTasks(tasks.filter((task, i) => i !== index));
+    setCompletedTasks([...completedTasks, task]);
   };
 
-  // clear task from completedTask array
-  const clearTask = (index) => {
-    let itemsCopy = [...completedTask];
-    itemsCopy.splice(index, 1);
-    setCompletedTask(itemsCopy);
+  const handleRandomTaskSelected = (selectedTask) => {
+    setTask(selectedTask);
   };
-
 
   return (
     <View style={styles.container}>
-      {/* Added this scroll view to enable scrolling when list gets longer than the page */}
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Today's Tasks */}
-        <View style={styles.tasksWrapper}>
+      <View style={styles.tasksWrapper}>
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Today's Tasks</Text>
-          <View style={styles.itemContainer}>
-            <View style={styles.items}>
-              {/* This is where the tasks will go! */}
-              {taskItems?.map((item, index) => {
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => completeTask(index)}
-                  >
-                    <Task text={item} />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
+          <ScrollView style={styles.items}>
+            {tasks.map((task, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.task}
+                onPress={() => handleCompleteTask(index)}
+              >
+                <Text style={styles.taskText}>{task}</Text>
+              </TouchableOpacity>
+            ))}
+            {tasks.length === 0 && (
+              <View style={styles.emptyTasks}>
+                <Text style={styles.emptyText}>No tasks to do</Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
-
-        <View style={styles.tasksWrapper}>
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Completed Tasks</Text>
-          <View style={styles.items}>
-            {/* This is where the tasks will go! */}
-            {completedTask?.map((item, index) => {
-              return (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => clearTask(index)}
-                >
-                  <Task text={item} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <ScrollView style={styles.items}>
+            {completedTasks.map((task, index) => (
+              <TouchableOpacity key={index} style={styles.task}>
+                <Text style={styles.taskText}>{task}</Text>
+              </TouchableOpacity>
+            ))}
+            {completedTasks.length === 0 && (
+              <View style={styles.emptyTasks}>
+                <Text style={styles.emptyText}>No tasks completed</Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
-      </ScrollView>
-
-      {/* Write a task */}
-      {/* Uses a keyboard avoiding view which ensures the keyboard does not cover the items on screen */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.writeTaskWrapper}
-      >
+      </View>
+      <View style={styles.writeTaskWrapper}>
         <TextInput
           style={styles.input}
           placeholder={"Write a task"}
           value={task}
           onChangeText={(text) => setTask(text)}
         />
-        <TouchableOpacity onPress={() => handleAddTask()}>
-          <View style={styles.addWrapper}>
-            <Text style={styles.addText}>
-              <Ionicons name="ios-add" size={24} color="black" />
-
-            </Text>
-          </View>
+        <RandomTaskButton onRandomTaskSelected={handleRandomTaskSelected} />
+        <TouchableOpacity style={styles.addWrapper} onPress={handleAddTask}>
+          <Text style={styles.addText}>+</Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     </View>
   );
 }
@@ -115,53 +88,138 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#d8e6fd",
+    backgroundColor: "#F0E6EF",
   },
   tasksWrapper: {
+    flex: 1,
     paddingTop: 80,
     paddingHorizontal: 20,
+    justifyContent: "space-between",
+  },
+  iconsWrapper: {
+    flexDirection: "row",
+    // alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 10,
+  },
+  iconButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  section: {
+    flex: 1,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: "bold",
-    color: "#232528",
-    // fontFamily: "Anybody-Regular",
+    color: "#6B5B95",
+    textAlign: "center",
+    marginBottom: 20,
+    textShadowColor: "#333",
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 5,
   },
-  itemContainer: {
-    marginTop: 10,
-    // BorderColor: "#F0FFF0",
-    // borderWidth: 1,
+  scrollView: {
+    marginTop: 20,
+    height: "60%",
   },
+
   items: {
-    marginTop: 30,
-   
+    height: 400,
+    overflow: "hidden",
+  },
+  task: {
+    width: "100%",
+    minHeight: 50,
+    borderRadius: 10,
+    backgroundColor: "#F3D3BD",
+    marginBottom: 10,
+    justifyContent: "center",
+    paddingLeft: 20,
+    shadowColor: "#333",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  taskText: {
+    fontSize: 18,
+    color: "#6B5B95",
+  },
+  deleteButton: {
+    position: "absolute",
+    right: 20,
+  },
+  deleteText: {
+    fontSize: 18,
+    color: "#E71D36",
+    fontWeight: "bold",
   },
   writeTaskWrapper: {
     position: "absolute",
-    bottom: 60,
+    bottom: 0,
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 30,
+    borderTopWidth: 1,
+    borderTopColor: "#D7DBDD",
+    backgroundColor: "#fff",
+    shadowColor: "#333",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 5,
+    elevation: 5,
   },
   input: {
     paddingVertical: 15,
     paddingHorizontal: 15,
-    backgroundColor: "#FFF",
-    borderRadius: 60,
+    backgroundColor: "#FEF8FC",
+    borderRadius: 50,
     borderColor: "#C0C0C0",
     borderWidth: 1,
-    width: 250,
+    width: "80%",
+    marginRight: 20,
+    fontSize: 18,
+    color: "#6B5B95",
   },
   addWrapper: {
     width: 60,
     height: 60,
-    backgroundColor: "#FFF",
-    borderRadius: 60,
+    backgroundColor: "#6B5B95",
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
-    borderColor: "#C0C0C0",
-    borderWidth: 1,
+    shadowColor: "#333",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  addText: { color: "#808080" },
+  addText: {
+    fontSize: 36,
+    color: "#FEF8FC",
+  },
+  emptyTasks: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: 24,
+    color: "#6B5B95",
+    textAlign: "center",
+  },
 });
