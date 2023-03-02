@@ -54,6 +54,7 @@ export default function App() {
           </ScrollView>
         </View>
         <View style={styles.section}>
+          
           <Text style={styles.sectionTitle}>Completed Tasks</Text>
           <ScrollView style={styles.items}>
             {completedTasks.map((task, index) => (
