@@ -1,78 +1,93 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+} from "react-native";
 
-const Task = (props) => {
+const Task = ({ text, id, completed, deleteTask, editTask }) => {
+  const [editable, setEditable] = useState(false);
+  const [taskText, setTaskText] = useState(text);
+
+  const handleDelete = () => {
+    deleteTask(id);
+  };
+
+  // write a function to edit the existing task and add the new value to state
+  const handleEdit = () => {
+    if (editable) {
+      editTask(id, taskText);
+    }
+    setEditable(!editable);
+  };
+
+  const handleTextChange = (text) => {
+    setTaskText(text);
+  };
+
   return (
-    <View style={styles.item}>
-      <View style={styles.itemLeft}>
-        <View style={styles.square}></View>
-        <Text style={styles.itemText}>{props.text}</Text>
+    <View style={styles.task}>
+      {editable ? (
+        <TextInput
+          style={styles.input}
+          value={taskText}
+          onChangeText={handleTextChange}
+          autoFocus={true}
+          onBlur={handleEdit}
+        />
+      ) : (
+        <Text style={styles.taskText}>{text}</Text>
+      )}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleEdit}>
+          <Text style={styles.button}>{editable ? "Save" : "Edit"}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleDelete}>
+          <Text style={styles.button}>Delete</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.circular}></View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  item: {
-    backgroundColor: "#FEF8FC",
-    padding: 15,
-    borderRadius: 10,
+  task: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
     width: "100%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    minHeight: 50,
+    borderRadius: 10,
+    backgroundColor: "#F3D3BD",
+    marginBottom: 20,
+    paddingLeft: 20,
+    paddingRight: 10,
+    shadowColor: "#333",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 5,
     elevation: 5,
   },
-  itemLeft: {
+  taskText: {
+    fontSize: 18,
+    color: "#6B5B95",
+    flex: 1,
+  },
+  input: {
+    fontSize: 18,
+    color: "#6B5B95",
+    flex: 1,
+  },
+  buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap",
   },
-  square: {
-    width: 24,
-    height: 24,
-    backgroundColor: "#6B5B95",
-    opacity: 0.4,
-    borderRadius: 5,
-    marginRight: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  itemText: {
-    maxWidth: "80%",
-    width: "80%",
+  button: {
     fontSize: 16,
     color: "#6B5B95",
-  },
-  circular: {
-    width: 12,
-    height: 12,
-    borderColor: "#6B5B95",
-    borderWidth: 2,
-    borderRadius: 5,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    marginLeft: 10,
   },
 });
 

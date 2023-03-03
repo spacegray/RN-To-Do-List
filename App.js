@@ -7,28 +7,45 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import RandomTaskButton from "./components/RandomTaskButton";
+import Task from "./components/Task";
 
 export default function App() {
-  const [task, setTask] = useState("");
   const [tasks, setTasks] = useState([]);
+  const [editingTask, setEditingTask] = useState(null);
+  const [selectedTasks, setSelectedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
+  const [task, setTask] = useState("");
 
   const handleAddTask = () => {
     if (task.length > 0) {
-      setTasks([...tasks, task]);
+      setTasks([...tasks, { id: Date.now(), text: task }]);
       setTask("");
     }
   };
 
-  const handleCompleteTask = (index) => {
-    const task = tasks[index];
-    setTasks(tasks.filter((task, i) => i !== index));
-    setCompletedTasks([...completedTasks, task]);
+  const editTask = (taskId, taskText) => {
+    const updatedTasks = tasks.map((task) => {
+      if (task.id === taskId) {
+        return { ...task, text: taskText };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+    setEditingTask(null);
   };
 
-  const handleRandomTaskSelected = (selectedTask) => {
-    setTask(selectedTask);
+  const handleDeleteTask = (taskId) => {
+    const remainingTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(remainingTasks);
+    setSelectedTasks([]);
+  };
+
+  const handleCompleteTask = (taskId) => {
+    const completedTask = tasks.find((task) => task.id === taskId);
+    setCompletedTasks([...completedTasks, completedTask]);
+    const remainingTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(remainingTasks);
+    setSelectedTasks([]);
   };
 
   return (
@@ -37,29 +54,27 @@ export default function App() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Today's Tasks</Text>
           <ScrollView style={styles.items}>
-            {tasks.map((task, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.task}
-                onPress={() => handleCompleteTask(index)}
-              >
-                <Text style={styles.taskText}>{task}</Text>
-              </TouchableOpacity>
+            {tasks.map((task) => (
+              <Task
+                key={task.id}
+                task={task}
+                handleDeleteTask={handleDeleteTask}
+                editTask={editTask}
+                handleCompleteTask={handleCompleteTask}
+                selectedTasks={selectedTasks}
+                editingTask={editingTask}
+                setEditingTask={setEditingTask}
+                text={task.text}
+              />
             ))}
-            {tasks.length === 0 && (
-              <View style={styles.emptyTasks}>
-                <Text style={styles.emptyText}>No tasks to do</Text>
-              </View>
-            )}
           </ScrollView>
         </View>
         <View style={styles.section}>
-          
           <Text style={styles.sectionTitle}>Completed Tasks</Text>
           <ScrollView style={styles.items}>
-            {completedTasks.map((task, index) => (
-              <TouchableOpacity key={index} style={styles.task}>
-                <Text style={styles.taskText}>{task}</Text>
+            {completedTasks.map((task) => (
+              <TouchableOpacity key={task.id} style={styles.task}>
+                <Text style={styles.taskText}>{task.text}</Text>
               </TouchableOpacity>
             ))}
             {completedTasks.length === 0 && (
@@ -76,8 +91,12 @@ export default function App() {
           placeholder={"Write a task"}
           value={task}
           onChangeText={(text) => setTask(text)}
+          onSubmitEditing={() => {
+            const newTask = { id: Date.now(), text: task };
+            setTasks([...tasks, newTask]);
+            setTask("");
+          }}
         />
-        <RandomTaskButton onRandomTaskSelected={handleRandomTaskSelected} />
         <TouchableOpacity style={styles.addWrapper} onPress={handleAddTask}>
           <Text style={styles.addText}>+</Text>
         </TouchableOpacity>
@@ -94,28 +113,11 @@ const styles = StyleSheet.create({
   tasksWrapper: {
     flex: 1,
     paddingTop: 80,
-    paddingHorizontal: 20,
+    paddingHorizontal: 50,
     justifyContent: "space-between",
-  },
-  iconsWrapper: {
-    flexDirection: "row",
-    // alignItems: "center",
-    justifyContent: "space-between",
-    marginHorizontal: 20,
-    marginBottom: 10,
-  },
-  iconButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
+    padding: 20,
+    // position the tasks in center
+    alignContent: "center",
   },
   section: {
     flex: 1,
@@ -130,25 +132,20 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 5,
   },
-  scrollView: {
-    marginTop: 20,
-    height: "60%",
-  },
-
   items: {
     height: 400,
     overflow: "hidden",
   },
   task: {
-    width: "100%",
+    width: "95%",
     minHeight: 50,
     borderRadius: 10,
-    backgroundColor: "#F3D3BD",
-    marginBottom: 10,
+    backgroundColor: "#FFF",
+    margin: 10,
     justifyContent: "center",
     paddingLeft: 20,
     shadowColor: "#333",
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.7,
     shadowRadius: 5,
     elevation: 5,
@@ -172,7 +169,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingVertical: 40,
     paddingHorizontal: 30,
     borderTopWidth: 1,
