@@ -1,0 +1,155 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Daypad mockup v1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--coral:#FF5E57;--violet:#4B2BFF;--pink:#FFB3D1;--lime:#D8F55B}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Bricolage Grotesque',sans-serif;background:#ECE9E2;padding:48px;color:#111}
+h1{font-size:44px;font-weight:800;letter-spacing:-.02em}
+.sub{margin:6px 0 32px;font-size:18px;color:#555;max-width:900px}
+.row{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-start}
+.lbl{font-family:'JetBrains Mono';font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px 4px;color:#555}
+.phone{width:360px;height:740px;border-radius:44px;border:3px solid #111;overflow:hidden;position:relative;box-shadow:8px 8px 0 #111}
+.light{--bg:#FAF8F3;--ink:#111;--muted:#6b6b6b;--card:#fff;--line:rgba(17,17,17,.07);--edge:#111}
+.dark{--bg:#0E0D14;--ink:#F4F1EA;--muted:#9a97a6;--card:#1A1824;--line:rgba(255,255,255,.06);--edge:#F4F1EA;--violet:#7B63FF}
+.scr{position:absolute;inset:0;background:var(--bg);color:var(--ink);
+ background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px;padding:54px 20px 0}
+.blob{position:absolute;width:300px;height:300px;top:-110px;right:-110px;border-radius:50%;filter:blur(40px);opacity:.75;
+ background:radial-gradient(circle at 30% 30%,var(--pink),transparent 60%),radial-gradient(circle at 70% 60%,var(--violet),transparent 60%),radial-gradient(circle at 40% 80%,var(--coral),transparent 60%)}
+.top{display:flex;justify-content:space-between;align-items:center;position:relative}
+.date{font-family:'JetBrains Mono';font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.icons{display:flex;gap:8px}
+.ib{width:38px;height:38px;border-radius:50%;border:2px solid var(--edge);display:grid;place-items:center;font-weight:800;background:var(--card);font-size:16px}
+h2{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1;margin:14px 0 6px;position:relative}
+h2 em{font-style:normal;background:linear-gradient(90deg,var(--violet),var(--coral));-webkit-background-clip:text;color:transparent}
+.prog{height:12px;border:2px solid var(--edge);border-radius:99px;margin:14px 0 18px;overflow:hidden;background:var(--card)}
+.prog i{display:block;height:100%;width:60%;background:linear-gradient(90deg,var(--violet),var(--pink),var(--coral))}
+.chips{display:flex;gap:6px;margin-bottom:14px}
+.chip{font-size:12px;font-weight:600;padding:5px 11px;border-radius:99px;border:2px solid var(--edge)}
+.chip.on{background:var(--ink);color:var(--bg)}
+.task{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--edge);border-radius:18px;padding:12px 14px;margin-bottom:10px;font-size:15px;font-weight:600}
+.task small{display:block;font-family:'JetBrains Mono';font-weight:400;font-size:11px;color:var(--muted);margin-top:2px}
+.ck{width:24px;height:24px;border-radius:8px;border:2px solid var(--edge);flex:none}
+.ck.done{background:linear-gradient(135deg,var(--violet),var(--coral));border-color:transparent;position:relative}
+.ck.done:after{content:'✓';color:#fff;position:absolute;inset:0;display:grid;place-items:center;font-size:14px}
+.task.d{opacity:.55;text-decoration:line-through}
+.pri{margin-left:auto;width:10px;height:10px;border-radius:50%}
+.add{position:absolute;left:20px;right:20px;bottom:92px;display:flex;gap:8px}
+.add .in{flex:1;border:2px solid var(--edge);border-radius:99px;background:var(--card);padding:14px 18px;color:var(--muted);font-size:14px}
+.add .go{width:52px;height:52px;border-radius:50%;background:var(--coral);border:2px solid var(--edge);display:grid;place-items:center;font-size:26px;font-weight:800;color:#111}
+.tabs{position:absolute;left:20px;right:20px;bottom:22px;height:58px;border-radius:99px;border:2px solid var(--edge);background:var(--card);display:flex;justify-content:space-around;align-items:center;font-size:13px;font-weight:700}
+.tabs span{padding:9px 16px;border-radius:99px}
+.tabs .on{background:var(--ink);color:var(--bg)}
+/* calc */
+.tape{background:var(--card);border:2px solid var(--edge);border-radius:20px;padding:14px 16px;font-family:'JetBrains Mono';margin-top:10px;position:relative}
+.tape p{font-size:13px;color:var(--muted);text-align:right;line-height:1.7}
+.tape .res{font-family:'Bricolage Grotesque';font-weight:800;font-size:46px;color:var(--ink);text-align:right;letter-spacing:-.02em}
+.save{display:flex;gap:6px;margin:10px 0}
+.save span{flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px;border-radius:99px;border:2px solid var(--edge)}
+.save .p{background:var(--lime);color:#111}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.k{height:54px;border-radius:18px;border:2px solid var(--edge);background:var(--card);display:grid;place-items:center;font-size:20px;font-weight:700}
+.k.op{background:var(--pink);color:#111}.k.eq{background:linear-gradient(135deg,var(--violet),var(--coral));color:#fff;border-color:var(--edge)}
+/* notes */
+.note{background:var(--card);border:2px solid var(--edge);border-radius:20px;padding:14px;margin-bottom:12px}
+.note h4{font-size:16px;font-weight:800;margin-bottom:4px}
+.note .meta{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);margin-bottom:8px}
+.calcblock{font-family:'JetBrains Mono';font-size:12px;background:var(--bg);border:1.5px dashed var(--edge);border-radius:12px;padding:8px 10px;margin-bottom:8px;line-height:1.6}
+.note p{font-size:14px;line-height:1.45}
+.rem{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--lime);color:#111;margin-top:8px;border:2px solid var(--edge)}
+/* help */
+.dim{position:absolute;inset:0;background:rgba(14,13,20,.55)}
+.ring{position:absolute;border:3px solid var(--lime);border-radius:99px;box-shadow:0 0 0 6px rgba(216,245,91,.25)}
+.tip{position:absolute;left:20px;right:20px;background:var(--card);border:2px solid var(--edge);border-radius:22px;padding:16px;box-shadow:6px 6px 0 var(--edge)}
+.tip b{font-size:12px;font-family:'JetBrains Mono';color:var(--violet);letter-spacing:.06em}
+.tip h5{font-size:19px;font-weight:800;margin:4px 0 6px}
+.tip p{font-size:13.5px;line-height:1.45;color:var(--muted)}
+.tip code{font-family:'JetBrains Mono';font-size:12px;background:var(--bg);padding:1px 5px;border-radius:6px;color:var(--ink)}
+.tip .nav{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;font-weight:700}
+.dots i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:4px;opacity:.4}.dots i.on{opacity:1;background:var(--violet);width:18px;border-radius:9px}
+.btn{padding:8px 16px;border-radius:99px;background:var(--ink);color:var(--bg)}
+.notes-panel{margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1200px}
+.np{background:#fff;border:2px solid #111;border-radius:20px;padding:20px;box-shadow:5px 5px 0 #111}
+.np h3{font-size:18px;margin-bottom:8px}.np li{font-size:14px;line-height:1.5;margin-left:18px}
+.sw{display:flex;gap:8px;margin-top:10px}.sw i{width:40px;height:40px;border-radius:12px;border:2px solid #111}
+</style></head><body>
+<h1>Daypad · mockup v1</h1>
+<p class="sub">The to-do app rebuilt as a daily desk pad: Tasks, Calc and Notes in one Expo app (iOS, Android and web). Sticker-style outlines on graph paper, with a mesh gradient for color. Light and dark themes, plus a "?" walkthrough.</p>
+
+<div class="row">
+<!-- 1 tasks light -->
+<div><p class="lbl">1 · Tasks · light</p>
+<div class="phone light"><div class="scr"><div class="blob"></div>
+ <div class="top"><span class="date">Tue · Nov 25</span><div class="icons"><span class="ib">?</span><span class="ib">☾</span></div></div>
+ <h2>Good morning.<br><em>3 of 5 done.</em></h2>
+ <div class="prog"><i></i></div>
+ <div class="chips"><span class="chip on">All 5</span><span class="chip">Today</span><span class="chip">Done 3</span></div>
+ <div class="task"><span class="ck"></span><div>Send invoice to café client<small>⏰ 2:00 pm · Work</small></div><span class="pri" style="background:var(--coral)"></span></div>
+ <div class="task"><span class="ck"></span><div>Pick up film from lab<small>Errands</small></div><span class="pri" style="background:var(--lime)"></span></div>
+ <div class="task d"><span class="ck done"></span><div>Morning run 5 km</div></div>
+ <div class="task d"><span class="ck done"></span><div>Reply to Sam</div></div>
+ <div class="add"><span class="in">Add a task… try "call mom 5pm"</span><span class="go">+</span></div>
+ <div class="tabs"><span class="on">Tasks</span><span>Calc</span><span>Notes</span></div>
+</div></div></div>
+
+<!-- 2 calc dark -->
+<div><p class="lbl">2 · Calc · dark</p>
+<div class="phone dark"><div class="scr"><div class="blob"></div>
+ <div class="top"><span class="date">Calculator</span><div class="icons"><span class="ib">?</span><span class="ib">☀</span></div></div>
+ <div class="tape"><p>1,240 × 0.2 = 248</p><p>248 + 1,240 =</p><div class="res">1,488</div></div>
+ <div class="save"><span class="p">Save result</span><span>Save full tape</span><span>Undo</span></div>
+ <div class="keys">
+  <span class="k">AC</span><span class="k">±</span><span class="k">%</span><span class="k op">÷</span>
+  <span class="k">7</span><span class="k">8</span><span class="k">9</span><span class="k op">×</span>
+  <span class="k">4</span><span class="k">5</span><span class="k">6</span><span class="k op">−</span>
+  <span class="k">1</span><span class="k">2</span><span class="k">3</span><span class="k op">+</span>
+  <span class="k">0</span><span class="k">.</span><span class="k">⌫</span><span class="k eq">=</span>
+ </div>
+ <div class="tabs"><span>Tasks</span><span class="on">Calc</span><span>Notes</span></div>
+</div></div></div>
+
+<!-- 3 notes light -->
+<div><p class="lbl">3 · Notes · light</p>
+<div class="phone light"><div class="scr"><div class="blob"></div>
+ <div class="top"><span class="date">Notes · 3</span><div class="icons"><span class="ib">?</span><span class="ib">☾</span></div></div>
+ <h2 style="font-size:30px">Notes &amp;<br><em>reminders.</em></h2>
+ <div class="note" style="margin-top:14px"><h4>Café invoice</h4><div class="meta">From Calc · Nov 25, 9:41 am</div>
+  <div class="calcblock">1,240 × 0.2 = 248<br>248 + 1,240 = <b>1,488</b></div>
+  <p>Includes 20% rush fee. Send before Friday.</p><span class="rem">⏰ Fri 10:00 am</span></div>
+ <div class="note"><h4>Gift ideas</h4><div class="meta">Nov 24</div><p>Film camera strap, the blue ceramic mug, concert tickets…</p></div>
+ <div class="add"><span class="in">New note…</span><span class="go">+</span></div>
+ <div class="tabs"><span>Tasks</span><span>Calc</span><span class="on">Notes</span></div>
+</div></div></div>
+
+<!-- 4 help dark -->
+<div><p class="lbl">4 · "?" walkthrough · dark</p>
+<div class="phone dark"><div class="scr"><div class="blob"></div>
+ <div class="top"><span class="date">Calculator</span><div class="icons"><span class="ib">?</span><span class="ib">☀</span></div></div>
+ <div class="tape"><p>1,240 × 0.2 = 248</p><div class="res">248</div></div>
+ <div class="save"><span class="p">Save result</span><span>Save full tape</span><span>Undo</span></div>
+ <div class="dim"></div>
+ <div class="ring" style="top:226px;left:16px;width:114px;height:42px"></div>
+ <div class="tip" style="top:290px"><b>STEP 3 OF 7 · CALC</b><h5>Save to a note</h5>
+  <p>Saves the answer, or every step on the tape, as a new note you can write under. The calculator keeps its own state in a reducer, so <code>Undo</code> rewinds one step at a time instead of clearing everything.</p>
+  <div class="nav"><span class="dots"><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></span><span class="btn">Next →</span></div></div>
+ <div class="tabs"><span>Tasks</span><span class="on">Calc</span><span>Notes</span></div>
+</div></div></div>
+</div>
+
+<div class="notes-panel">
+ <div class="np"><h3>Features</h3><ul>
+  <li>Tasks: add, complete, edit, swipe to delete with undo, priority, due time, filters, progress bar</li>
+  <li>Calc: running tape, undo, copy, save result or full tape to a note</li>
+  <li>Notes: write under saved calculations, set a reminder (notification on phone, banner on web)</li>
+  <li>Everything saved on the device, works offline</li></ul></div>
+ <div class="np"><h3>Tech</h3><ul>
+  <li>Expo SDK (latest), React Native, TypeScript, Expo Router tabs</li>
+  <li>Zustand state layer with persistence (AsyncStorage)</li>
+  <li>Reanimated for layout, swipe and theme animations</li>
+  <li>Unit tests for the calculator engine and stores</li>
+  <li>Web build on Vercel, with the repo's history kept</li></ul></div>
+ <div class="np"><h3>Palette</h3>
+  <div class="sw"><i style="background:#FF5E57"></i><i style="background:#4B2BFF"></i><i style="background:#FFB3D1"></i><i style="background:#D8F55B"></i><i style="background:#FAF8F3"></i><i style="background:#0E0D14"></i></div>
+  <p style="font-size:13px;margin-top:10px;color:#555">Coral, violet, pink and lime on paper or ink. Bricolage Grotesque for type, JetBrains Mono for numbers. Thick outlines with offset shadows.</p></div>
+</div>
+</body></html>
