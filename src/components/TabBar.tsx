@@ -15,7 +15,7 @@ const tabs: { key: Tab; label: string }[] = [
 
 const PAD = 4;
 // long ease-out: the bar glides open and settles without a bounce
-const intro = { duration: 1400, easing: Easing.bezier(0.16, 1, 0.3, 1) };
+const intro = { duration: 1800, easing: Easing.bezier(0.16, 1, 0.3, 1) };
 
 /**
  * Pill tab bar; the dark indicator slides between tabs on a spring.

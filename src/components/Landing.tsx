@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 import Animated, {
-  Easing, FadeIn, FadeInDown, FadeInLeft, FadeInRight, FadeInUp, LinearTransition, ZoomIn,
+  Easing, FadeIn, FadeInDown, FadeInLeft, FadeInRight, FadeInUp, LinearTransition,
   interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
@@ -22,7 +22,19 @@ import { useUI } from '../store/ui';
 const FILL = ['#F25AA6', '#D650C4', '#A14FE2', '#6B47F5'] as const;
 const INK = palette.ink;
 const PAPER = '#FFFDF6';
-const ease = Easing.bezier(0.16, 1, 0.3, 1);
+const ease = Easing.bezier(0.22, 1, 0.36, 1); // ease-out-quint: long, soft landings
+
+/** Entrance choreography in ms ([delay, duration]); the whole scene settles in about 5 s. */
+const T = {
+  orb: (i: number) => [i * 220, 2600] as const,
+  kicker: [700, 1600] as const,
+  letter: (i: number) => [1000 + i * 260, 1800] as const,
+  pad: [1800, 1800] as const,
+  card: (k: number) => [2200 + k * 260, 1700] as const,
+  point: (i: number) => [3000 + i * 280, 1500] as const,
+  actions: [3700, 1500] as const,
+  exit: 2600,
+};
 
 type Orb = { x: number; y: number; r: number; color: string; o: number; home?: [number, number] };
 // x/y are fractions of the screen; `home` marks the orbs that settle into the app's corner cluster
@@ -85,7 +97,7 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
     };
   });
   return (
-    <Animated.View entering={ZoomIn.delay(i * 110).duration(1400).easing(ease)} style={{ position: 'absolute', left: cx - r, top: cy - r }}>
+    <Animated.View entering={FadeIn.delay(T.orb(i)[0]).duration(T.orb(i)[1]).easing(ease)} style={{ position: 'absolute', left: cx - r, top: cy - r }}>
       <Animated.View style={style}>
         <OrbShape r={r} color={orb.color} id={`orb${i}`} />
       </Animated.View>
@@ -101,7 +113,7 @@ function Cluster({ s, drift }: { s: number; drift: SharedValue<number> }) {
   return (
     <Animated.View style={[{ width: 236 * s, height: 150 * s }, sway]} aria-hidden>
       {/* notepad */}
-      <Animated.View entering={FadeInUp.delay(1050).duration(900).easing(ease)} style={{ position: 'absolute', left: 18 * s, top: 8 * s }}>
+      <Animated.View entering={FadeInUp.delay(T.card(0)[0]).duration(T.card(0)[1]).easing(ease)} style={{ position: 'absolute', left: 18 * s, top: 8 * s }}>
         <View style={[card, { position: 'relative', width: 96 * s, height: 120 * s, backgroundColor: PAPER, transform: [{ rotate: '-10deg' }] }]}>
           {Array.from({ length: 9 }, (_, k) => <View key={k} style={{ position: 'absolute', left: 0, right: 0, top: (22 + k * 11) * s, height: 1, backgroundColor: '#DCE6F2' }} />)}
           <View style={{ position: 'absolute', left: 13 * s, top: 0, bottom: 0, width: 2, backgroundColor: palette.pink }} />
@@ -111,7 +123,7 @@ function Cluster({ s, drift }: { s: number; drift: SharedValue<number> }) {
         </View>
       </Animated.View>
       {/* calculator */}
-      <Animated.View entering={FadeInUp.delay(1200).duration(900).easing(ease)} style={{ position: 'absolute', left: 96 * s, top: 0 }}>
+      <Animated.View entering={FadeInUp.delay(T.card(1)[0]).duration(T.card(1)[1]).easing(ease)} style={{ position: 'absolute', left: 96 * s, top: 0 }}>
         <View style={[card, { position: 'relative', width: 82 * s, height: 110 * s, backgroundColor: palette.night, padding: 7 * s, transform: [{ rotate: '9deg' }] }]}>
           <View style={{ height: 22 * s, borderRadius: 5 * s, borderWidth: 1.5, borderColor: '#F4F1EA', alignItems: 'flex-end', justifyContent: 'center', paddingRight: 5 * s }}>
             <Text style={{ color: '#F4F1EA', fontFamily: font.monoBold, fontSize: 12 * s }}>42</Text>
@@ -124,14 +136,14 @@ function Cluster({ s, drift }: { s: number; drift: SharedValue<number> }) {
         </View>
       </Animated.View>
       {/* sticky note */}
-      <Animated.View entering={FadeInUp.delay(1350).duration(900).easing(ease)} style={{ position: 'absolute', left: 56 * s, top: 82 * s }}>
+      <Animated.View entering={FadeInUp.delay(T.card(2)[0]).duration(T.card(2)[1]).easing(ease)} style={{ position: 'absolute', left: 56 * s, top: 82 * s }}>
         <View style={[card, { position: 'relative', width: 112 * s, height: 62 * s, backgroundColor: palette.lime, padding: 8 * s, transform: [{ rotate: '-4deg' }] }]}>
           <Text style={{ fontFamily: font.black, fontSize: 13 * s, color: INK }}>Water plants</Text>
           <Text style={{ fontFamily: font.mono, fontSize: 11 * s, color: INK, marginTop: 3 * s }}>7:00 pm</Text>
         </View>
       </Animated.View>
       {/* pencil coin */}
-      <Animated.View entering={ZoomIn.delay(1500).duration(700).easing(ease)} style={{ position: 'absolute', left: 174 * s, top: 90 * s }}>
+      <Animated.View entering={FadeInUp.delay(T.card(3)[0]).duration(T.card(3)[1]).easing(ease)} style={{ position: 'absolute', left: 174 * s, top: 90 * s }}>
         <View style={[card, { position: 'relative', width: 44 * s, height: 44 * s, borderRadius: 22 * s, backgroundColor: palette.coral, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '12deg' }] }]}>
           <Pencil size={20 * s} color={INK} />
         </View>
@@ -141,9 +153,9 @@ function Cluster({ s, drift }: { s: number; drift: SharedValue<number> }) {
 }
 
 const points = [
-  { text: 'Smart lists that keep you on track', Icon: ListCheck, shift: -12, from: FadeInLeft },
-  { text: "A calc that's always mathing", Icon: Calc, shift: 26, from: FadeInRight },
-  { text: 'Notes that remind you', Icon: Bell, shift: -8, from: FadeInLeft },
+  { text: 'Smart lists that keep you on track', Icon: ListCheck, shift: -12 },
+  { text: "A calc that's always mathing", Icon: Calc, shift: 26 },
+  { text: 'Notes that remind you', Icon: Bell, shift: -8 },
 ];
 
 export function Landing() {
@@ -157,16 +169,17 @@ export function Landing() {
   const leaving = useRef(false);
 
   useEffect(() => {
-    if (!reduce) drift.value = withDelay(1200, withRepeat(withTiming(1, { duration: 6500, easing: Easing.inOut(Easing.sin) }), -1, true));
+    if (!reduce) drift.value = withDelay(4200, withRepeat(withTiming(1, { duration: 6500, easing: Easing.inOut(Easing.sin) }), -1, true));
   }, [reduce, drift]);
 
   // Everything scales from one factor set by the tighter of width and height, so the column grows
   // on big screens but always fits; each part has its own cap so nothing spreads past its margins.
-  const g = Math.min(W / 390, H / 820);
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-  const day = Math.min(W * 0.36, H * 0.19, 250); // title
-  const s = clamp(g, 0.85, 1.7); // tool cluster
-  const t = clamp(g, 0.95, 1.3); // body text and buttons
+  const wide = W >= 860 && W / H >= 1.15; // title moves left of the cluster, list and buttons
+  const g = wide ? Math.min(W / 1280, H / 800) : Math.min(W / 390, H / 820);
+  const day = wide ? clamp(Math.min(W * 0.17, H * 0.3), 150, 300) : Math.min(W * 0.36, H * 0.19, 250); // title
+  const s = wide ? clamp(g * 1.5, 1.15, 2) * 1.15 : clamp(g, 0.85, 1.7) * 1.15; // tool cluster, 15% fuller at rest
+  const t = wide ? clamp(g * 1.1, 1, 1.45) : clamp(g, 0.95, 1.3); // body text and buttons
   const gap = clamp(g, 0.85, 1.4); // vertical spacing
 
   // hover drift (web pointers): the title and cluster lean gently toward the cursor, in opposite directions
@@ -182,27 +195,27 @@ export function Landing() {
   const titleLean = useAnimatedStyle(() => ({ transform: [{ translateX: px.value * 10 }, { translateY: py.value * 6 }] }));
   const clusterLean = useAnimatedStyle(() => ({ transform: [{ translateX: -px.value * 14 }, { translateY: -py.value * 8 }, { rotate: `${px.value * 1.5}deg` }] }));
   const orbLean = useAnimatedStyle(() => ({ transform: [{ translateX: px.value * 18 }, { translateY: py.value * 12 }] }));
-  const glide = LinearTransition.duration(600).easing(ease);
+  const glide = LinearTransition.duration(900).easing(ease);
 
   const leave = (demo: boolean) => {
     if (leaving.current) return;
     leaving.current = true;
     const done = () => {
       close();
-      if (demo) setTimeout(openTour, 2000); // after the tab bar has glided open
+      if (demo) setTimeout(openTour, 2400); // after the tab bar has glided open
     };
-    out.value = withTiming(1, { duration: reduce ? 450 : 1700, easing: Easing.inOut(Easing.cubic) }, (f) => { if (f) scheduleOnRN(done); });
+    out.value = withTiming(1, { duration: reduce ? 450 : T.exit, easing: Easing.inOut(Easing.cubic) }, (f) => { if (f) scheduleOnRN(done); });
   };
 
   const fill = useAnimatedStyle(() => ({ opacity: interpolate(out.value, [0.2, 0.8], [1, 0], 'clamp') }));
   const content = useAnimatedStyle(() => ({
-    opacity: interpolate(out.value, [0, 0.35], [1, 0], 'clamp'),
-    transform: [{ translateY: interpolate(out.value, [0, 0.35], [0, -40], 'clamp') }],
+    opacity: interpolate(out.value, [0, 0.4], [1, 0], 'clamp'),
+    transform: [{ translateY: interpolate(out.value, [0, 0.4], [0, -32], 'clamp') }],
   }));
 
   return (
     <View style={StyleSheet.absoluteFill} accessibilityViewIsModal aria-modal onPointerMove={onPointerMove}>
-      <Animated.View entering={FadeIn.duration(500)} style={[StyleSheet.absoluteFill, fill]}>
+      <Animated.View entering={FadeIn.duration(1200)} style={[StyleSheet.absoluteFill, fill]}>
         <LinearGradient colors={FILL} locations={[0, 0.35, 0.7, 1]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
       </Animated.View>
       <Animated.View style={[StyleSheet.absoluteFill, { overflow: 'hidden', pointerEvents: 'none' }, orbLean]}>
@@ -210,42 +223,53 @@ export function Landing() {
       </Animated.View>
 
       <Animated.View style={[styles.column, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }, content]}>
-        <View style={{ flex: 1.35 }} />
-        <Animated.Text layout={glide} entering={FadeInDown.delay(350).duration(900).easing(ease)} style={[styles.kicker, { fontSize: 12 * t, letterSpacing: 2 * t }]}>Tasks · Calc · Notes</Animated.Text>
+        <View style={{ flex: wide ? 1.15 : 1.35 }} />
+        <Animated.View layout={glide} style={wide ? [styles.row, { gap: clamp(W * 0.06, 48, 120) }] : { alignItems: 'center' }}>
+          {/* title block: kicker, giant "Day", smaller "pad." */}
+          <Animated.View
+            layout={glide}
+            entering={wide ? FadeInRight.delay(T.kicker[0]).duration(T.pad[1] + 800).easing(ease) : undefined}
+            style={{ alignItems: wide ? 'flex-start' : 'center' }}
+          >
+            <Animated.Text entering={FadeInDown.delay(T.kicker[0]).duration(T.kicker[1]).easing(ease)} style={[styles.kicker, { fontSize: 12 * t, letterSpacing: 2 * t, marginLeft: wide ? day * 0.04 : 0 }]}>Tasks · Calc · Notes</Animated.Text>
+            <Animated.View accessible accessibilityRole="header" accessibilityLabel="Daypad" style={[{ alignItems: wide ? 'flex-start' : 'center', marginTop: 10 * gap }, titleLean]}>
+              <View style={{ flexDirection: 'row' }}>
+                {'Day'.split('').map((ch, i) => (
+                  <Animated.Text key={i} entering={FadeInDown.delay(T.letter(i)[0]).duration(T.letter(i)[1]).easing(ease)} style={[styles.day, { fontSize: day, lineHeight: day * 0.95, letterSpacing: -0.06 * day }]}>{ch}</Animated.Text>
+                ))}
+              </View>
+              <Animated.Text entering={FadeInRight.delay(T.pad[0]).duration(T.pad[1]).easing(ease)} style={[styles.pad, { fontSize: day * 0.46, lineHeight: day * 0.5, marginTop: -day * 0.08, marginLeft: day * 0.9, letterSpacing: -0.03 * day }]}>pad.</Animated.Text>
+            </Animated.View>
+          </Animated.View>
 
-        <Animated.View layout={glide} style={{ marginTop: 10 * gap }}>
-          <Animated.View accessible accessibilityRole="header" accessibilityLabel="Daypad" style={[{ alignItems: 'center' }, titleLean]}>
-            <View style={{ flexDirection: 'row' }}>
-              {'Day'.split('').map((ch, i) => (
-                <Animated.Text key={i} entering={FadeInDown.delay(500 + i * 120).duration(1000).easing(ease)} style={[styles.day, { fontSize: day, lineHeight: day * 0.95, letterSpacing: -0.06 * day }]}>{ch}</Animated.Text>
+          {/* content block: cluster, feature list, buttons */}
+          <Animated.View layout={glide} style={{ alignItems: wide ? 'flex-start' : 'center', marginTop: wide ? 0 : 18 * gap }}>
+            <Animated.View style={clusterLean}>
+              <Cluster s={s} drift={drift} />
+            </Animated.View>
+
+            <View style={{ alignItems: wide ? 'flex-start' : 'center', marginTop: 16 * gap + (wide ? 8 : 0), gap: 10 * t }}>
+              {points.map(({ text, Icon, shift }, i) => (
+                <Animated.View
+                  key={text}
+                  entering={(wide || i % 2 === 0 ? FadeInLeft : FadeInRight).delay(T.point(i)[0]).duration(T.point(i)[1]).easing(ease)}
+                  style={[styles.point, { gap: 10 * t }, !wide && { marginLeft: shift * t, marginRight: -shift * t }]}
+                >
+                  <View style={[styles.pointIcon, { width: 26 * t, height: 26 * t, borderRadius: 13 * t }]}><Icon size={14 * t} color="#fff" /></View>
+                  <Text style={[styles.pointText, { fontSize: 13 * t }]}>{text}</Text>
+                </Animated.View>
               ))}
             </View>
-            <Animated.Text entering={FadeInRight.delay(900).duration(1000).easing(ease)} style={[styles.pad, { fontSize: day * 0.46, lineHeight: day * 0.5, marginTop: -day * 0.08, marginLeft: day * 0.9, letterSpacing: -0.03 * day }]}>pad.</Animated.Text>
-          </Animated.View>
-        </Animated.View>
 
-        <Animated.View layout={glide} style={{ alignItems: 'center', marginTop: 18 * gap }}>
-          <Animated.View style={clusterLean}>
-            <Cluster s={s} drift={drift} />
-          </Animated.View>
-        </Animated.View>
-
-        <Animated.View layout={glide} style={{ alignItems: 'center', marginTop: 16 * gap, gap: 8 * t }}>
-          {points.map(({ text, Icon, shift, from }, i) => (
-            <Animated.View key={text} entering={from.delay(1450 + i * 150).duration(900).easing(ease)} style={[styles.point, { gap: 8 * t, marginLeft: shift * t, marginRight: -shift * t }]}>
-              <View style={[styles.pointIcon, { width: 24 * t, height: 24 * t, borderRadius: 12 * t }]}><Icon size={13 * t} color="#fff" /></View>
-              <Text style={[styles.pointText, { fontSize: 13 * t }]}>{text}</Text>
+            <Animated.View entering={FadeInDown.delay(T.actions[0]).duration(T.actions[1]).easing(ease)} style={[styles.actions, { marginTop: 26 * gap, gap: 12 * t, justifyContent: wide ? 'flex-start' : 'center' }]}>
+              <Bouncy accessibilityRole="button" accessibilityLabel="Enter Daypad" onPress={() => leave(false)} style={[styles.enter, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 24 * t, boxShadow: `3px 3px 0px ${INK}` }]}>
+                <Text style={[styles.enterText, { fontSize: 15 * t }]}>Enter Daypad →</Text>
+              </Bouncy>
+              <Bouncy accessibilityRole="button" accessibilityLabel="Watch demo: enter Daypad with a guided tour" onPress={() => leave(true)} style={[styles.demo, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 20 * t }]}>
+                <Text style={[styles.demoText, { fontSize: 15 * t }]}>Watch demo</Text>
+              </Bouncy>
             </Animated.View>
-          ))}
-        </Animated.View>
-
-        <Animated.View layout={glide} entering={FadeInDown.delay(1950).duration(900).easing(ease)} style={[styles.actions, { marginTop: 26 * gap, gap: 10 * t }]}>
-          <Bouncy accessibilityRole="button" accessibilityLabel="Enter Daypad" onPress={() => leave(false)} style={[styles.enter, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 24 * t, boxShadow: `3px 3px 0px ${INK}` }]}>
-            <Text style={[styles.enterText, { fontSize: 15 * t }]}>Enter Daypad →</Text>
-          </Bouncy>
-          <Bouncy accessibilityRole="button" accessibilityLabel="Watch demo: enter Daypad with a guided tour" onPress={() => leave(true)} style={[styles.demo, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 20 * t }]}>
-            <Text style={[styles.demoText, { fontSize: 15 * t }]}>Watch demo</Text>
-          </Bouncy>
+          </Animated.View>
         </Animated.View>
         <View style={{ flex: 1 }} />
       </Animated.View>
@@ -261,7 +285,8 @@ const styles = StyleSheet.create({
   point: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   pointIcon: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   pointText: { fontFamily: font.mono, fontSize: 13, color: '#fff' },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 26, flexWrap: 'wrap', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  actions: { flexDirection: 'row', flexWrap: 'wrap' },
   enter: { height: 52, paddingHorizontal: 24, borderRadius: 26, borderWidth: 2, borderColor: INK, backgroundColor: palette.lime, alignItems: 'center', justifyContent: 'center' },
   enterText: { fontFamily: font.black, fontSize: 15, color: INK },
   demo: { height: 52, paddingHorizontal: 20, borderRadius: 26, borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
