@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { storage, uid } from './storage';
+import { uid } from './storage';
+import { persisted } from './persist';
 import type { TapeLine } from '../lib/calc';
 import { cancelReminder, scheduleReminder } from '../lib/reminders';
 
@@ -99,7 +100,7 @@ export const useNotes = create<NotesState>()(
         if (n && !n.title.trim() && !n.body.trim() && !n.calc && !n.reminder) set((s) => ({ notes: s.notes.filter((x) => x.id !== id) }));
       },
     }),
-    { name: 'daypad.notes', storage, version: 1, partialize: (s) => ({ notes: s.notes }) },
+    persisted('notes', { version: 1, partialize: (s) => ({ notes: s.notes }) }),
   ),
 );
 

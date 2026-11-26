@@ -33,14 +33,17 @@ import { useUI, selectLanding, type Tab } from './src/store/ui';
 import { useTasks } from './src/store/tasks';
 import { useNotes } from './src/store/notes';
 import { useCalc } from './src/store/calc';
+import { useDrafts } from './src/store/drafts';
+import { syncAcrossTabs } from './src/store/persist';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const order: Tab[] = ['tasks', 'calc', 'notes'];
-const stores = [useUI, useTasks, useNotes, useCalc];
+const stores = [useUI, useTasks, useNotes, useCalc, useDrafts];
 
 function useHydrated() {
   const [ok, setOk] = useState(() => stores.every((s) => s.persist.hasHydrated()));
+  useEffect(() => syncAcrossTabs(stores), []);
   useEffect(() => {
     if (ok) return;
     const check = () => stores.every((s) => s.persist.hasHydrated()) && setOk(true);

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { usePersistentState } from '../store/drafts';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, View, type HostInstance } from "react-native";
 import Animated, { FadeInDown, FadeOutLeft, LinearTransition } from 'react-native-reanimated';
 import { useShallow } from 'zustand/react/shallow';
@@ -48,7 +49,7 @@ export function NotesScreen() {
   const c = useTheme();
   const onFooterScroll = useFooterScroll();
   const { notes, create, open } = useNotes(useShallow((s) => ({ notes: s.notes, create: s.create, open: s.open })));
-  const [q, setQ] = useState('');
+  const [q, setQ] = usePersistentState('notes.search', '');
   const firstRef = useTourTarget("notes.first");
 
   const list = useMemo(() => {

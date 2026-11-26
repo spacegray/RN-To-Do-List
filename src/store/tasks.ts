@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { storage, uid } from './storage';
+import { uid } from './storage';
+import { persisted } from './persist';
 import { parseTask, type Priority } from '../lib/parseTask';
 import { cancelReminder, scheduleReminder } from '../lib/reminders';
 
@@ -124,7 +125,7 @@ export const useTasks = create<TasksState>()(
       setFilter: (filter) => set({ filter }),
       markFired: (id) => set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, fired: true } : t)) })),
     }),
-    { name: 'daypad.tasks', storage, version: 1, partialize: (s) => ({ tasks: s.tasks, filter: s.filter }) },
+    persisted('tasks', { version: 1, partialize: (s) => ({ tasks: s.tasks, filter: s.filter }) }),
   ),
 );
 
