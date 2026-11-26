@@ -5,12 +5,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 import Animated, {
-  Easing, FadeIn, FadeInDown, FadeInLeft, FadeInRight, FadeInUp, ZoomIn,
+  Easing, FadeIn, FadeInDown, FadeInLeft, FadeInRight, FadeInUp, LinearTransition, ZoomIn,
   interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import { Bouncy } from './Bouncy';
-import { Bell, Calc, Pencil } from './Icons';
+import { Bell, Calc, ListCheck, Pencil } from './Icons';
 import { font, palette } from '../theme/tokens';
 import { useUI } from '../store/ui';
 
@@ -57,6 +57,8 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
   const { width: W, height: H } = useWindowDimensions();
   const cx = orb.x * W;
   const cy = orb.y * H;
+  // orbs grow with the screen (up to double) so big displays stay just as cloudy
+  const r = orb.r * Math.max(1, Math.min(2, Math.max(W, H) / 900));
   const sign = i % 2 ? 1 : -1;
   const style = useAnimatedStyle(() => {
     const e = interpolate(out.value, [0.1, 1], [0, 1], 'clamp');
@@ -69,7 +71,7 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
       const ty = 60 + orb.home[1] - cy;
       return {
         opacity: orb.o * interpolate(e, [0, 0.7, 1], [1, 0.9, 0]),
-        transform: [{ translateX: dx * (1 - e) + tx * e }, { translateY: dy * (1 - e) + ty * e }, { scale: interpolate(e, [0, 1], [1, 90 / orb.r]) }],
+        transform: [{ translateX: dx * (1 - e) + tx * e }, { translateY: dy * (1 - e) + ty * e }, { scale: interpolate(e, [0, 1], [1, 90 / r]) }],
       };
     }
     // everything else flies outward from the centre, swelling and sinking as it fades
@@ -83,9 +85,9 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
     };
   });
   return (
-    <Animated.View entering={ZoomIn.delay(i * 110).duration(1400).easing(ease)} style={{ position: 'absolute', left: cx - orb.r, top: cy - orb.r }}>
+    <Animated.View entering={ZoomIn.delay(i * 110).duration(1400).easing(ease)} style={{ position: 'absolute', left: cx - r, top: cy - r }}>
       <Animated.View style={style}>
-        <OrbShape r={orb.r} color={orb.color} id={`orb${i}`} />
+        <OrbShape r={r} color={orb.color} id={`orb${i}`} />
       </Animated.View>
     </Animated.View>
   );
@@ -139,8 +141,8 @@ function Cluster({ s, drift }: { s: number; drift: SharedValue<number> }) {
 }
 
 const points = [
-  { text: 'Type "call mom 5pm"', Icon: Pencil, shift: -26, from: FadeInLeft },
-  { text: 'A calc that keeps a tape', Icon: Calc, shift: 30, from: FadeInRight },
+  { text: 'Smart lists that keep you on track', Icon: ListCheck, shift: -12, from: FadeInLeft },
+  { text: "A calc that's always mathing", Icon: Calc, shift: 26, from: FadeInRight },
   { text: 'Notes that remind you', Icon: Bell, shift: -8, from: FadeInLeft },
 ];
 
@@ -158,8 +160,29 @@ export function Landing() {
     if (!reduce) drift.value = withDelay(1200, withRepeat(withTiming(1, { duration: 6500, easing: Easing.inOut(Easing.sin) }), -1, true));
   }, [reduce, drift]);
 
-  const day = Math.min(W * 0.36, H * 0.17, 168);
-  const s = Math.max(0.85, Math.min(1.3, Math.min(W / 390, H / 800)));
+  // Everything scales from one factor set by the tighter of width and height, so the column grows
+  // on big screens but always fits; each part has its own cap so nothing spreads past its margins.
+  const g = Math.min(W / 390, H / 820);
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+  const day = Math.min(W * 0.36, H * 0.19, 250); // title
+  const s = clamp(g, 0.85, 1.7); // tool cluster
+  const t = clamp(g, 0.95, 1.3); // body text and buttons
+  const gap = clamp(g, 0.85, 1.4); // vertical spacing
+
+  // hover drift (web pointers): the title and cluster lean gently toward the cursor, in opposite directions
+  const px = useSharedValue(0);
+  const py = useSharedValue(0);
+  const onPointerMove = (e: { nativeEvent: { pageX?: number; pageY?: number; clientX?: number; clientY?: number } }) => {
+    if (reduce) return;
+    const x = e.nativeEvent.pageX ?? e.nativeEvent.clientX ?? W / 2;
+    const y = e.nativeEvent.pageY ?? e.nativeEvent.clientY ?? H / 2;
+    px.value = withTiming((x / W) * 2 - 1, { duration: 900, easing: ease });
+    py.value = withTiming((y / H) * 2 - 1, { duration: 900, easing: ease });
+  };
+  const titleLean = useAnimatedStyle(() => ({ transform: [{ translateX: px.value * 10 }, { translateY: py.value * 6 }] }));
+  const clusterLean = useAnimatedStyle(() => ({ transform: [{ translateX: -px.value * 14 }, { translateY: -py.value * 8 }, { rotate: `${px.value * 1.5}deg` }] }));
+  const orbLean = useAnimatedStyle(() => ({ transform: [{ translateX: px.value * 18 }, { translateY: py.value * 12 }] }));
+  const glide = LinearTransition.duration(600).easing(ease);
 
   const leave = (demo: boolean) => {
     if (leaving.current) return;
@@ -178,46 +201,50 @@ export function Landing() {
   }));
 
   return (
-    <View style={StyleSheet.absoluteFill} accessibilityViewIsModal aria-modal>
+    <View style={StyleSheet.absoluteFill} accessibilityViewIsModal aria-modal onPointerMove={onPointerMove}>
       <Animated.View entering={FadeIn.duration(500)} style={[StyleSheet.absoluteFill, fill]}>
         <LinearGradient colors={FILL} locations={[0, 0.35, 0.7, 1]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
       </Animated.View>
-      <View style={[StyleSheet.absoluteFill, { overflow: 'hidden', pointerEvents: 'none' }]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { overflow: 'hidden', pointerEvents: 'none' }, orbLean]}>
         {ORBS.map((o, i) => <FloatingOrb key={i} orb={o} i={i} out={out} drift={drift} reduce={reduce} />)}
-      </View>
+      </Animated.View>
 
       <Animated.View style={[styles.column, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }, content]}>
         <View style={{ flex: 1.35 }} />
-        <Animated.Text entering={FadeInDown.delay(350).duration(900).easing(ease)} style={styles.kicker}>Tasks · Calc · Notes</Animated.Text>
+        <Animated.Text layout={glide} entering={FadeInDown.delay(350).duration(900).easing(ease)} style={[styles.kicker, { fontSize: 12 * t, letterSpacing: 2 * t }]}>Tasks · Calc · Notes</Animated.Text>
 
-        <View accessible accessibilityRole="header" accessibilityLabel="Daypad" style={{ alignItems: 'center', marginTop: 10 }}>
-          <View style={{ flexDirection: 'row' }}>
-            {'Day'.split('').map((ch, i) => (
-              <Animated.Text key={i} entering={FadeInDown.delay(500 + i * 120).duration(1000).easing(ease)} style={[styles.day, { fontSize: day, lineHeight: day * 0.95, letterSpacing: -0.06 * day }]}>{ch}</Animated.Text>
-            ))}
-          </View>
-          <Animated.Text entering={FadeInRight.delay(900).duration(1000).easing(ease)} style={[styles.pad, { fontSize: day * 0.46, lineHeight: day * 0.5, marginTop: -day * 0.08, marginLeft: day * 0.9 }]}>pad.</Animated.Text>
-        </View>
+        <Animated.View layout={glide} style={{ marginTop: 10 * gap }}>
+          <Animated.View accessible accessibilityRole="header" accessibilityLabel="Daypad" style={[{ alignItems: 'center' }, titleLean]}>
+            <View style={{ flexDirection: 'row' }}>
+              {'Day'.split('').map((ch, i) => (
+                <Animated.Text key={i} entering={FadeInDown.delay(500 + i * 120).duration(1000).easing(ease)} style={[styles.day, { fontSize: day, lineHeight: day * 0.95, letterSpacing: -0.06 * day }]}>{ch}</Animated.Text>
+              ))}
+            </View>
+            <Animated.Text entering={FadeInRight.delay(900).duration(1000).easing(ease)} style={[styles.pad, { fontSize: day * 0.46, lineHeight: day * 0.5, marginTop: -day * 0.08, marginLeft: day * 0.9, letterSpacing: -0.03 * day }]}>pad.</Animated.Text>
+          </Animated.View>
+        </Animated.View>
 
-        <View style={{ alignItems: 'center', marginTop: 18 * s }}>
-          <Cluster s={s} drift={drift} />
-        </View>
+        <Animated.View layout={glide} style={{ alignItems: 'center', marginTop: 18 * gap }}>
+          <Animated.View style={clusterLean}>
+            <Cluster s={s} drift={drift} />
+          </Animated.View>
+        </Animated.View>
 
-        <View style={{ alignItems: 'center', marginTop: 16 * s, gap: 8 }}>
+        <Animated.View layout={glide} style={{ alignItems: 'center', marginTop: 16 * gap, gap: 8 * t }}>
           {points.map(({ text, Icon, shift, from }, i) => (
-            <Animated.View key={text} entering={from.delay(1450 + i * 150).duration(900).easing(ease)} style={[styles.point, { marginLeft: shift * s, marginRight: -shift * s }]}>
-              <View style={styles.pointIcon}><Icon size={13} color="#fff" /></View>
-              <Text style={styles.pointText}>{text}</Text>
+            <Animated.View key={text} entering={from.delay(1450 + i * 150).duration(900).easing(ease)} style={[styles.point, { gap: 8 * t, marginLeft: shift * t, marginRight: -shift * t }]}>
+              <View style={[styles.pointIcon, { width: 24 * t, height: 24 * t, borderRadius: 12 * t }]}><Icon size={13 * t} color="#fff" /></View>
+              <Text style={[styles.pointText, { fontSize: 13 * t }]}>{text}</Text>
             </Animated.View>
           ))}
-        </View>
+        </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(1950).duration(900).easing(ease)} style={styles.actions}>
-          <Bouncy accessibilityRole="button" accessibilityLabel="Enter Daypad" onPress={() => leave(false)} style={[styles.enter, { boxShadow: `3px 3px 0px ${INK}` }]}>
-            <Text style={styles.enterText}>Enter Daypad →</Text>
+        <Animated.View layout={glide} entering={FadeInDown.delay(1950).duration(900).easing(ease)} style={[styles.actions, { marginTop: 26 * gap, gap: 10 * t }]}>
+          <Bouncy accessibilityRole="button" accessibilityLabel="Enter Daypad" onPress={() => leave(false)} style={[styles.enter, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 24 * t, boxShadow: `3px 3px 0px ${INK}` }]}>
+            <Text style={[styles.enterText, { fontSize: 15 * t }]}>Enter Daypad →</Text>
           </Bouncy>
-          <Bouncy accessibilityRole="button" accessibilityLabel="Watch demo: enter Daypad with a guided tour" onPress={() => leave(true)} style={styles.demo}>
-            <Text style={styles.demoText}>Watch demo</Text>
+          <Bouncy accessibilityRole="button" accessibilityLabel="Watch demo: enter Daypad with a guided tour" onPress={() => leave(true)} style={[styles.demo, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 20 * t }]}>
+            <Text style={[styles.demoText, { fontSize: 15 * t }]}>Watch demo</Text>
           </Bouncy>
         </Animated.View>
         <View style={{ flex: 1 }} />

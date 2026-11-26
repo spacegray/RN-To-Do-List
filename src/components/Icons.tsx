@@ -70,3 +70,11 @@ export function Calc({ size = 16, color }: P) {
     </Svg>
   );
 }
+
+export function ListCheck({ size = 16, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M3.5 5.5l1.5 1.5l2.5-2.5M3.5 11.5l1.5 1.5l2.5-2.5M3.5 17.5l1.5 1.5l2.5-2.5M11 6h9M11 12h9M11 18h9" />
+    </Svg>
+  );
+}
