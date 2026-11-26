@@ -6,7 +6,8 @@ import { persisted } from './persist';
 export type Tab = 'tasks' | 'calc' | 'notes';
 export type ThemePref = 'system' | 'light' | 'dark';
 export type HeroDir = 'down' | 'diag' | 'across';
-export const HERO_DEFAULT = ['#F25AA6', '#D650C4', '#A14FE2', '#6B47F5'];
+/** default landing colors (Oat), also what the color panel's Reset returns to */
+export const HERO_DEFAULT = ['#F4ECDD', '#E3D3BC', '#C9B49A', '#A8957E'];
 export const HERO_CUSTOM_MAX = 10;
 export type HeroCustom = { id: string; fill: string[]; dir: HeroDir };
 

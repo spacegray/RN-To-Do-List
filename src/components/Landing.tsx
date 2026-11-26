@@ -15,7 +15,7 @@ import { font, palette } from '../theme/tokens';
 import { useUI } from '../store/ui';
 import { HeroPanel, heroPoints, isLightFill } from './HeroPanel';
 
-/* Landing view: a fuchsia → violet ombre full of the app's orbs, a giant "Day / pad." title, a small
+/* Landing view: an ombre (Oat by default, picked in the color panel) full of the app's orbs, a giant "Day / pad." title, a small
    cluster of the app's tools and two ways in. Leaving it, the text lifts away, the orbs part like
    clouds (one cluster drifts into the top-right corner where the app's own orbs live) and the fill
    fades to the grid underneath. Colors here are fixed: it is art, so it looks the same in both themes. */

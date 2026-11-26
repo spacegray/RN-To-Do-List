@@ -17,7 +17,8 @@ const PAPER = '#FFFDF6';
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 
 export const PRESETS: { name: string; fill: string[] }[] = [
-  { name: 'Orchid', fill: HERO_DEFAULT },
+  { name: 'Oat', fill: HERO_DEFAULT },
+  { name: 'Orchid', fill: ['#F25AA6', '#D650C4', '#A14FE2', '#6B47F5'] },
   { name: 'Electric', fill: ['#E8308C', '#B02CC9', '#4B2BFF'] },
   { name: 'Blush', fill: ['#FDE3EF', '#F6C6E3', '#DDB8F2', '#BFB3FF'] },
   { name: 'Afterglow', fill: ['#FF8A5B', '#FF5E57', '#C93C9C', '#4B2BFF'] },
@@ -28,7 +29,6 @@ export const PRESETS: { name: string; fill: string[] }[] = [
   // softer neutrals and fall / winter contrasts
   { name: 'Bordeaux Sea', fill: ['#6D1A36', '#A23E5C', '#7FC8B4', '#C9F0E1'] },
   { name: 'Wine and Lime', fill: ['#5A1230', '#8E2449', '#C9E265'] },
-  { name: 'Oat', fill: ['#F4ECDD', '#E3D3BC', '#C9B49A', '#A8957E'] },
   { name: 'Linen', fill: ['#FBF7F0', '#EFE4D6', '#D9CBBE', '#BFB3C9'] },
   { name: 'Juniper', fill: ['#1F3B3A', '#3E6E68', '#A9C9C1', '#E8F0EE'] },
   { name: 'Ember', fill: ['#7A2E1E', '#C1572E', '#E8A15A', '#F4D8A8'] },
@@ -397,8 +397,8 @@ export function HeroPanel({ ink, top }: { ink: string; top: number }) {
                 })}
               </View>
 
-              <Bouncy accessibilityRole="button" accessibilityLabel="Reset to Orchid" onPress={() => { setHero({ fill: HERO_DEFAULT, dir: 'diag' }); setSlot(0); }} style={[styles.reset, slim && { marginTop: 12 }]}>
-                <Text style={[styles.textBtnLabel, slim && { fontSize: 11 }]}>{slim ? 'Reset' : 'Reset to Orchid'}</Text>
+              <Bouncy accessibilityRole="button" accessibilityLabel="Reset to Oat" onPress={() => { setHero({ fill: HERO_DEFAULT, dir: 'diag' }); setSlot(0); }} style={[styles.reset, slim && { marginTop: 12 }]}>
+                <Text style={[styles.textBtnLabel, slim && { fontSize: 11 }]}>{slim ? 'Reset' : 'Reset to Oat'}</Text>
               </Bouncy>
             </ScrollView>
           </Animated.View>
