@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePersistentState } from '../store/drafts';
 import { Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -47,7 +48,7 @@ export function TasksScreen() {
     useShallow((s) => ({ tasks: s.tasks, filter: s.filter, add: s.add, toggle: s.toggle, remove: s.remove, rename: s.rename, cyclePriority: s.cyclePriority, setFilter: s.setFilter, undoRemove: s.undoRemove, clearDone: s.clearDone })),
   );
   const showToast = useUI((s) => s.showToast);
-  const [text, setText] = useState('');
+  const [text, setText] = usePersistentState('tasks.composer', '');
   const firstRef = useTourTarget("tasks.first");
   const now = useNow();
   const onScroll = useFooterScroll();
@@ -104,7 +105,7 @@ export function TasksScreen() {
         </View>
       </View>
 
-      {/* notepad page: ruled lines scroll with the list, the composer stays pinned to the page's bottom edge */}
+      {/* notepad page: ruled lines scroll with the list; the composer sits below it, pinned above the tab bar */}
       <View style={[styles.pad, styles.sheetPad]}>
         <View style={[styles.sheet, { backgroundColor: c.paper, borderColor: c.edge, boxShadow: `5px 5px 0px ${c.edge}` }]}>
           <View style={[styles.margin, { backgroundColor: c.pink }]} aria-hidden />
@@ -138,37 +139,37 @@ export function TasksScreen() {
           <View style={[styles.holes, { pointerEvents: 'none' }]} aria-hidden>
             {[0, 1, 2, 3].map((i) => <View key={i} style={[styles.hole, { backgroundColor: c.bg, borderColor: c.edge }]} />)}
           </View>
-          <View style={styles.composerWrap}>
-            {hasExtras ? (
-              <Animated.View entering={FadeIn.duration(motion.fast)} exiting={FadeOut.duration(motion.fast)} style={[styles.preview, { backgroundColor: c.lime, borderColor: c.edge }]}>
-                <Text style={[styles.previewText, { color: c.onAccent }]} numberOfLines={1} accessibilityLiveRegion="polite">
-                  {[preview!.due ? `⏰ ${formatDue(preview!.due)}` : null, preview!.tag ? `#${preview!.tag}` : null, preview!.priority === 'high' ? 'High priority' : null].filter(Boolean).join('  ·  ')}
-                </Text>
-              </Animated.View>
-            ) : null}
-            <View ref={useTourTarget('tasks.composer')} style={[styles.composer, { backgroundColor: c.taupe, borderColor: c.edge, boxShadow: `3px 3px 0px ${c.edge}` }]}>
-              <TextInput
-                value={text}
-                onChangeText={setText}
-                onSubmitEditing={submit}
-                placeholder='Add a task… "call mom 5pm"'
-                placeholderTextColor={c.muted}
-                returnKeyType="done"
-                submitBehavior="submit"
-                accessibilityLabel="New task"
-                style={[styles.input, { color: c.ink, borderColor: c.edge, backgroundColor: c.card }, Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
-              />
-              <Bouncy
-                accessibilityRole="button"
-                accessibilityLabel="Add task"
-                aria-disabled={!text.trim()}
-                onPress={submit}
-                style={[styles.add, { backgroundColor: text.trim() ? c.coral : c.cardAlt, borderColor: c.edge }]}
-              >
-                <Text style={[styles.plus, { color: c.onAccent }]}>+</Text>
-              </Bouncy>
-            </View>
-          </View>
+        </View>
+      </View>
+      <View style={styles.composerWrap}>
+        {hasExtras ? (
+          <Animated.View entering={FadeIn.duration(motion.fast)} exiting={FadeOut.duration(motion.fast)} style={[styles.preview, { backgroundColor: c.lime, borderColor: c.edge }]}>
+            <Text style={[styles.previewText, { color: c.onAccent }]} numberOfLines={1} accessibilityLiveRegion="polite">
+              {[preview!.due ? `⏰ ${formatDue(preview!.due)}` : null, preview!.tag ? `#${preview!.tag}` : null, preview!.priority === 'high' ? 'High priority' : null].filter(Boolean).join('  ·  ')}
+            </Text>
+          </Animated.View>
+        ) : null}
+        <View ref={useTourTarget('tasks.composer')} style={[styles.composer, { backgroundColor: c.taupe, borderColor: c.edge, boxShadow: `3px 3px 0px ${c.edge}` }]}>
+          <TextInput
+            value={text}
+            onChangeText={setText}
+            onSubmitEditing={submit}
+            placeholder='Add a task… "call mom 5pm"'
+            placeholderTextColor={c.muted}
+            returnKeyType="done"
+            submitBehavior="submit"
+            accessibilityLabel="New task"
+            style={[styles.input, { color: c.ink, borderColor: c.edge, backgroundColor: c.card }, Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
+          />
+          <Bouncy
+            accessibilityRole="button"
+            accessibilityLabel="Add task"
+            aria-disabled={!text.trim()}
+            onPress={submit}
+            style={[styles.add, { backgroundColor: text.trim() ? c.coral : c.cardAlt, borderColor: c.edge }]}
+          >
+            <Text style={[styles.plus, { color: c.onAccent }]}>+</Text>
+          </Bouncy>
         </View>
       </View>
     </View>
@@ -193,8 +194,8 @@ const styles = StyleSheet.create({
   chip: { minHeight: 36, paddingHorizontal: 14, borderRadius: radius.pill, borderWidth: stroke, justifyContent: 'center' },
   chipText: { fontFamily: font.bold, fontSize: 13 },
   empty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: radius.lg, padding: 24, marginTop: 4 },
-  composerWrap: { paddingHorizontal: 8, paddingBottom: 10, paddingTop: 4 },
-  preview: { alignSelf: 'flex-start', borderWidth: stroke, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5, marginBottom: 8, marginLeft: 6 },
+  composerWrap: { paddingLeft: 16, paddingRight: 21, paddingTop: 10 },
+  preview: { position: 'absolute', bottom: '100%', left: 16, zIndex: 2, borderWidth: stroke, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5, marginBottom: -4, marginLeft: 6 },
   previewText: { fontFamily: font.bold, fontSize: 12 },
   composer: { flexDirection: 'row', gap: 6, alignItems: 'center', borderWidth: stroke, borderRadius: radius.pill, padding: 5 },
   input: { flex: 1, height: 46, borderWidth: stroke, borderRadius: radius.pill, paddingHorizontal: 18, fontFamily: font.medium, fontSize: 15 },

@@ -5,6 +5,8 @@ import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, w
 import { useTheme } from '../theme/useTheme';
 
 const CELL = 28;
+/** matches the app column's maxWidth in App.tsx; on wider screens the bubble stays beside the column */
+const COLUMN = 520;
 
 /** Graph paper grid plus a slowly drifting mesh gradient in the top corner. */
 export const Backdrop = memo(function Backdrop() {
@@ -24,6 +26,8 @@ export const Backdrop = memo(function Backdrop() {
 
   const cols = Math.ceil(width / CELL);
   const rows = Math.ceil(height / CELL);
+  // margin from the window's right edge: 0 on phones, the empty space beside the column on wide screens
+  const side = Math.max(0, (width - COLUMN) / 2);
   const blob = c.mode === "dark" ? 0.7 : 0.6;
 
   return (
@@ -34,7 +38,7 @@ export const Backdrop = memo(function Backdrop() {
       {Array.from({ length: rows }, (_, i) => (
         <View key={`h${i}`} style={{ position: 'absolute', top: i * CELL, left: 0, right: 0, height: 1, backgroundColor: c.grid }} />
       ))}
-      <View style={styles.mesh}>
+      <View style={[styles.mesh, { right: styles.mesh.right + side }]}>
         <Animated.View style={[styles.dot, { backgroundColor: c.pink, opacity: blob, top: 10, left: 40 }, a]} />
         <Animated.View style={[styles.dot, { backgroundColor: c.violet, opacity: blob, top: 90, left: 140 }, b]} />
         <Animated.View style={[styles.dot, { backgroundColor: c.coral, opacity: blob * 0.85, top: 170, left: 60, width: 150, height: 150 }, d]} />
