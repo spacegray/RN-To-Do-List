@@ -5,6 +5,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import Animated, { FadeInDown, FadeOutLeft, LinearTransition, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bouncy } from './Bouncy';
+import { Pencil, Trash } from './Icons';
 import { useTheme } from '../theme/useTheme';
 import { font, motion, radius, stroke, type } from '../theme/tokens';
 import { formatDue } from '../lib/parseTask';
@@ -120,10 +121,29 @@ export const TaskItem = memo(function TaskItem({ task, onToggle, onDelete, onRen
             accessibilityRole="button"
             accessibilityLabel={`Priority ${task.priority}. Change priority`}
             onPress={() => onPriority(task.id)}
-            hitSlop={14}
+            hitSlop={8}
             style={styles.priHit}
           >
             <View style={[styles.pri, { backgroundColor: priColor, borderColor: c.edge }]} />
+          </Bouncy>
+
+          <Bouncy
+            accessibilityRole="button"
+            accessibilityLabel={`Edit ${task.title}`}
+            onPress={() => { setDraft(task.title); setEditing(true); }}
+            hitSlop={8}
+            style={[styles.tool, { borderColor: c.edge, backgroundColor: c.card }]}
+          >
+            <Pencil size={13} color={c.ink} />
+          </Bouncy>
+          <Bouncy
+            accessibilityRole="button"
+            accessibilityLabel={`Delete ${task.title}`}
+            onPress={() => onDelete(task.id)}
+            hitSlop={8}
+            style={[styles.tool, { borderColor: c.edge, backgroundColor: c.card }]}
+          >
+            <Trash size={13} color={c.danger} />
           </Bouncy>
         </Animated.View>
       </GestureDetector>
@@ -135,12 +155,13 @@ const styles = StyleSheet.create({
   outer: { marginBottom: 10, overflow: 'hidden', borderRadius: radius.md + 2 },
   under: { ...StyleSheet.absoluteFill, borderRadius: radius.md + 2, alignItems: 'flex-end', justifyContent: 'center', paddingRight: 20 },
   underText: { color: '#fff', fontFamily: font.bold, fontSize: 14 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: stroke, borderRadius: radius.md + 2, paddingVertical: 12, paddingLeft: 14, paddingRight: 6, minHeight: 60 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: stroke, borderRadius: radius.md + 2, paddingVertical: 12, paddingLeft: 12, paddingRight: 10, minHeight: 60 },
   check: { width: 26, height: 26, borderRadius: 8, borderWidth: stroke, overflow: 'hidden' },
   checkFill: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tick: { color: '#fff', fontSize: 15, fontFamily: font.black, lineHeight: 18 },
   body: { flex: 1, minHeight: 36, justifyContent: 'center' },
   input: { borderBottomWidth: 2, paddingVertical: 2 },
-  priHit: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  priHit: { width: 24, height: 44, alignItems: 'center', justifyContent: 'center' },
+  tool: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   pri: { width: 14, height: 14, borderRadius: 7, borderWidth: 1.5 },
 });

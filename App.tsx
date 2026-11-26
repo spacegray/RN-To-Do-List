@@ -18,6 +18,8 @@ import { JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono/600
 
 import { Backdrop } from './src/components/Backdrop';
 import { TabBar } from './src/components/TabBar';
+import { Footer, FooterToggle, FOOTER_H } from './src/components/Footer';
+import { Landing } from './src/components/Landing';
 import { Toast } from './src/components/Toast';
 import { HelpTour } from './src/components/HelpTour';
 import { ThemeReveal } from './src/components/ThemeReveal';
@@ -27,7 +29,7 @@ import { TasksScreen } from './src/screens/TasksScreen';
 import { CalcScreen } from './src/screens/CalcScreen';
 import { NotesScreen } from './src/screens/NotesScreen';
 import { useTheme } from './src/theme/useTheme';
-import { useUI, type Tab } from './src/store/ui';
+import { useUI, selectLanding, type Tab } from './src/store/ui';
 import { useTasks } from './src/store/tasks';
 import { useNotes } from './src/store/notes';
 import { useCalc } from './src/store/calc';
@@ -70,7 +72,9 @@ function Shell() {
   }, [c]);
 
   const Screen = tab === 'tasks' ? TasksScreen : tab === 'calc' ? CalcScreen : NotesScreen;
-  const tabBarBottom = Math.max(insets.bottom, 12);
+  const footerOpen = useUI((s) => s.footerOpen);
+  const landing = useUI(selectLanding);
+  const footerInset = Math.max(insets.bottom, 4);
 
   return (
     <View style={[styles.root, { backgroundColor: c.bg }]}>
@@ -81,16 +85,19 @@ function Shell() {
           key={tab}
           entering={(dir > 0 ? SlideInRight : SlideInLeft).springify().damping(22).mass(0.7)}
           exiting={FadeOut.duration(120)}
-          style={[styles.screen, { marginBottom: 60 + tabBarBottom }]}
+          style={styles.screen}
         >
           <Screen />
         </Animated.View>
-        <View style={[styles.tabs, { bottom: tabBarBottom }]}>
-          <TabBar />
+        <View style={styles.tabs}>
+          <View style={{ flex: 1 }}><TabBar /></View>
+          <FooterToggle />
         </View>
       </View>
+      <Footer inset={footerInset} />
       <NoteEditorHost />
-      <Toast bottom={60 + tabBarBottom + 12} />
+      <Toast bottom={60 + 18 + footerInset + (footerOpen ? FOOTER_H : 0) + 12} />
+      {landing ? <Landing /> : null}
       <HelpTour />
       <ThemeReveal />
       <ReminderWatcher />
@@ -123,6 +130,6 @@ export default function App() {
 const styles = StyleSheet.create({
   root: { flex: 1, overflow: 'hidden' },
   column: { flex: 1, width: '100%', maxWidth: 520, alignSelf: 'center' },
-  screen: { flex: 1, overflow: 'hidden' },
-  tabs: { position: 'absolute', left: 0, right: 0 },
+  screen: { flex: 1, overflow: 'hidden', marginBottom: 10 },
+  tabs: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingBottom: 18 },
 });

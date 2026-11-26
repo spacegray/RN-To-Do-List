@@ -17,6 +17,7 @@ export type ThemeColors = {
   ink: string; muted: string; edge: string; inverseInk: string;
   violet: string; coral: string; pink: string; lime: string;
   onAccent: string; danger: string; scrim: string;
+  taupe: string; paper: string; rule: string;
   gradient: [string, string, string];
 };
 
@@ -26,6 +27,7 @@ export const light: ThemeColors = {
   ink: palette.ink, muted: '#5F5E66', edge: palette.ink, inverseInk: palette.paper,
   violet: palette.violet, coral: palette.coral, pink: palette.pink, lime: palette.lime,
   onAccent: palette.ink, danger: '#D93A33', scrim: 'rgba(14,13,20,0.55)',
+  taupe: '#E9E3D8', paper: '#FFFDF6', rule: '#DCE6F2',
   gradient: [palette.violet, palette.pink, palette.coral],
 };
 
@@ -35,6 +37,7 @@ export const dark: ThemeColors = {
   ink: '#F4F1EA', muted: '#A9A6B6', edge: '#F4F1EA', inverseInk: palette.night,
   violet: palette.violetBright, coral: palette.coral, pink: palette.pink, lime: palette.lime,
   onAccent: palette.ink, danger: '#FF7A73', scrim: 'rgba(0,0,0,0.6)',
+  taupe: '#26222C', paper: '#15131D', rule: 'rgba(255,255,255,0.07)',
   gradient: [palette.violetBright, palette.pink, palette.coral],
 };
 

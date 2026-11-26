@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Header } from '../components/Header';
 import { Bouncy } from '../components/Bouncy';
 import { useTourTarget } from '../components/tour';
+import { useFooterScroll } from '../components/Footer';
 import { useTheme } from '../theme/useTheme';
 import { font, radius, stroke, type } from '../theme/tokens';
 import { sortedNotes, useNotes, type Note } from '../store/notes';
@@ -45,6 +46,7 @@ function NoteCard({ note, onOpen, tourRef }: { note: Note; onOpen: () => void; t
 
 export function NotesScreen() {
   const c = useTheme();
+  const onFooterScroll = useFooterScroll();
   const { notes, create, open } = useNotes(useShallow((s) => ({ notes: s.notes, create: s.create, open: s.open })));
   const [q, setQ] = useState('');
   const firstRef = useTourTarget("notes.first");
@@ -58,7 +60,7 @@ export function NotesScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 28 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingBottom: 28 }} keyboardShouldPersistTaps="handled" onScroll={onFooterScroll} scrollEventThrottle={32}>
         <Header label={`Notes · ${notes.length}`} title="Notes &" accent="reminders." />
         <View style={styles.pad}>
           <View style={styles.toolbar}>
