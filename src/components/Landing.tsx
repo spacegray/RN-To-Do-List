@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,6 +13,7 @@ import { Bouncy } from './Bouncy';
 import { Bell, Calc, ListCheck, Pencil } from './Icons';
 import { font, palette } from '../theme/tokens';
 import { useUI } from '../store/ui';
+import { HeroPanel, heroPoints, isLightFill } from './HeroPanel';
 
 /* Landing view: a fuchsia → violet ombre full of the app's orbs, a giant "Day / pad." title, a small
    cluster of the app's tools and two ways in. Leaving it, the text lifts away, the orbs part like
@@ -65,7 +66,7 @@ const OrbShape = memo(function OrbShape({ r, color, id }: { r: number; color: st
   );
 });
 
-function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out: SharedValue<number>; drift: SharedValue<number>; reduce: boolean }) {
+function FloatingOrb({ orb, i, out, drift, px, py, reduce }: { orb: Orb; i: number; out: SharedValue<number>; drift: SharedValue<number>; px: SharedValue<number>; py: SharedValue<number>; reduce: boolean }) {
   const { width: W, height: H } = useWindowDimensions();
   const cx = orb.x * W;
   const cy = orb.y * H;
@@ -76,6 +77,15 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
     const e = interpolate(out.value, [0.1, 1], [0, 1], 'clamp');
     const dx = sign * 26 * (drift.value - 0.5);
     const dy = -sign * 20 * (drift.value - 0.5);
+    // each orb answers the cursor or finger on its own: a depth sway (nearer orbs move more), and a
+    // gentle push away when the pointer comes close, so the clouds part around it
+    const depth = 0.5 + (i % 3) * 0.35;
+    const fx = (px.value + 1) * 0.5 * W - cx;
+    const fy = (py.value + 1) * 0.5 * H - cy;
+    const d = Math.max(1, Math.hypot(fx, fy));
+    const push = Math.max(0, 1 - d / (r * 2.2)) * 46;
+    const ix = (px.value * 12 * depth - (fx / d) * push) * (1 - out.value);
+    const iy = (py.value * 9 * depth - (fy / d) * push) * (1 - out.value);
     if (reduce) return { opacity: orb.o * (1 - e), transform: [{ translateX: 0 }, { translateY: 0 }, { scale: 1 }] };
     if (orb.home) {
       // drift into the app's corner cluster (centre about 70px in from the right, 60px down) and shrink
@@ -83,7 +93,7 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
       const ty = 60 + orb.home[1] - cy;
       return {
         opacity: orb.o * interpolate(e, [0, 0.7, 1], [1, 0.9, 0]),
-        transform: [{ translateX: dx * (1 - e) + tx * e }, { translateY: dy * (1 - e) + ty * e }, { scale: interpolate(e, [0, 1], [1, 90 / r]) }],
+        transform: [{ translateX: (dx + ix) * (1 - e) + tx * e }, { translateY: (dy + iy) * (1 - e) + ty * e }, { scale: interpolate(e, [0, 1], [1, 90 / r]) }],
       };
     }
     // everything else flies outward from the centre, swelling and sinking as it fades
@@ -93,7 +103,7 @@ function FloatingOrb({ orb, i, out, drift, reduce }: { orb: Orb; i: number; out:
     const dist = Math.max(W, H) * 0.8;
     return {
       opacity: orb.o * (1 - e),
-      transform: [{ translateX: dx + (vx / len) * dist * e }, { translateY: dy + (vy / len) * dist * e + 180 * e * e }, { scale: 1 + 0.5 * e }],
+      transform: [{ translateX: dx + ix + (vx / len) * dist * e }, { translateY: dy + iy + (vy / len) * dist * e + 180 * e * e }, { scale: 1 + 0.5 * e }],
     };
   });
   return (
@@ -152,6 +162,10 @@ function Cluster({ s, drift }: { s: number; drift: SharedValue<number> }) {
   );
 }
 
+// On web, `overflow: hidden` still lets the browser scroll the box (focus or a click inside the
+// sliding colour panel nudged it sideways, exposing the app at the edge); `clip` can't be scrolled.
+const CLIP = (process.env.EXPO_OS === 'web' ? 'clip' : 'hidden') as 'hidden';
+
 const points = [
   { text: 'Smart lists that keep you on track', Icon: ListCheck, shift: -12 },
   { text: "A calc that's always mathing", Icon: Calc, shift: 26 },
@@ -168,8 +182,20 @@ export function Landing() {
   const drift = useSharedValue(0.5);
   const leaving = useRef(false);
 
+  // hero colors from the color panel; a change crossfades over the previous gradient
+  const heroFill = useUI((st) => st.heroFill);
+  const heroDir = useUI((st) => st.heroDir);
+  const [layers, setLayers] = useState([{ key: 0, fill: heroFill, dir: heroDir }]);
+  const top = layers[layers.length - 1];
+  if (top.fill !== heroFill || top.dir !== heroDir) setLayers([top, { key: top.key + 1, fill: heroFill, dir: heroDir }]);
+  // text flips to ink on light fills so it keeps its contrast
+  const light = isLightFill(heroFill);
+  const fg = light ? INK : '#FFFFFF';
+  const fgSoft = light ? '#3D3B45' : 'rgba(255,255,255,0.92)';
+  const accent = light ? palette.violet : palette.lime;
+
   useEffect(() => {
-    if (!reduce) drift.value = withDelay(4200, withRepeat(withTiming(1, { duration: 6500, easing: Easing.inOut(Easing.sin) }), -1, true));
+    if (!reduce) drift.value = withDelay(4200, withRepeat(withTiming(1, { duration: 6250, easing: Easing.inOut(Easing.sin) }), -1, true));
   }, [reduce, drift]);
 
   // Everything scales from one factor set by the tighter of width and height, so the column grows
@@ -189,9 +215,19 @@ export function Landing() {
     if (reduce) return;
     const x = e.nativeEvent.pageX ?? e.nativeEvent.clientX ?? W / 2;
     const y = e.nativeEvent.pageY ?? e.nativeEvent.clientY ?? H / 2;
-    px.value = withTiming((x / W) * 2 - 1, { duration: 900, easing: ease });
-    py.value = withTiming((y / H) * 2 - 1, { duration: 900, easing: ease });
+    px.value = withTiming((x / W) * 2 - 1, { duration: 865, easing: ease });
+    py.value = withTiming((y / H) * 2 - 1, { duration: 865, easing: ease });
   };
+  // after a finger lifts, the orbs drift back to rest (a mouse keeps its last position)
+  const settle = (e?: { nativeEvent?: { pointerType?: string } }) => {
+    if (reduce || (e?.nativeEvent?.pointerType && e.nativeEvent.pointerType !== 'touch')) return;
+    px.value = withTiming(0, { duration: 1800, easing: ease });
+    py.value = withTiming(0, { duration: 1800, easing: ease });
+  };
+  // web gets pointer events for mouse, pen and touch; native gets touches (observed, not claimed, so taps still land)
+  const follow = process.env.EXPO_OS === 'web'
+    ? { onPointerMove, onPointerDown: onPointerMove, onPointerUp: settle, onPointerCancel: settle }
+    : { onTouchStart: onPointerMove, onTouchMove: onPointerMove, onTouchEnd: () => settle(), onTouchCancel: () => settle() };
   const titleLean = useAnimatedStyle(() => ({ transform: [{ translateX: px.value * 10 }, { translateY: py.value * 6 }] }));
   const clusterLean = useAnimatedStyle(() => ({ transform: [{ translateX: -px.value * 14 }, { translateY: -py.value * 8 }, { rotate: `${px.value * 1.5}deg` }] }));
   const orbLean = useAnimatedStyle(() => ({ transform: [{ translateX: px.value * 18 }, { translateY: py.value * 12 }] }));
@@ -208,18 +244,24 @@ export function Landing() {
   };
 
   const fill = useAnimatedStyle(() => ({ opacity: interpolate(out.value, [0.2, 0.8], [1, 0], 'clamp') }));
+  const panelFade = useAnimatedStyle(() => ({ opacity: interpolate(out.value, [0, 0.2], [1, 0], 'clamp') }));
   const content = useAnimatedStyle(() => ({
     opacity: interpolate(out.value, [0, 0.4], [1, 0], 'clamp'),
     transform: [{ translateY: interpolate(out.value, [0, 0.4], [0, -32], 'clamp') }],
   }));
 
   return (
-    <View style={StyleSheet.absoluteFill} accessibilityViewIsModal aria-modal onPointerMove={onPointerMove}>
+    <View style={[StyleSheet.absoluteFill, { overflow: CLIP }]} accessibilityViewIsModal aria-modal {...follow}>
       <Animated.View entering={FadeIn.duration(1200)} style={[StyleSheet.absoluteFill, fill]}>
-        <LinearGradient colors={FILL} locations={[0, 0.35, 0.7, 1]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
+        {layers.map((l) => (
+          <Animated.View key={l.key} entering={l.key ? FadeIn.duration(700).easing(ease) : undefined} style={StyleSheet.absoluteFill}>
+            <LinearGradient colors={l.fill as unknown as readonly [string, string, ...string[]]} {...heroPoints(l.dir)} style={StyleSheet.absoluteFill} />
+          </Animated.View>
+        ))}
       </Animated.View>
-      <Animated.View style={[StyleSheet.absoluteFill, { overflow: 'hidden', pointerEvents: 'none' }, orbLean]}>
-        {ORBS.map((o, i) => <FloatingOrb key={i} orb={o} i={i} out={out} drift={drift} reduce={reduce} />)}
+      {/* no clip here: this layer leans with the pointer, so its own edge would slide into view; the root clips instead */}
+      <Animated.View style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }, orbLean]}>
+        {ORBS.map((o, i) => <FloatingOrb key={i} orb={o} i={i} out={out} drift={drift} px={px} py={py} reduce={reduce} />)}
       </Animated.View>
 
       <Animated.View style={[styles.column, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }, content]}>
@@ -231,14 +273,14 @@ export function Landing() {
             entering={wide ? FadeInRight.delay(T.kicker[0]).duration(T.pad[1] + 800).easing(ease) : undefined}
             style={{ alignItems: wide ? 'flex-start' : 'center' }}
           >
-            <Animated.Text entering={FadeInDown.delay(T.kicker[0]).duration(T.kicker[1]).easing(ease)} style={[styles.kicker, { fontSize: 12 * t, letterSpacing: 2 * t, marginLeft: wide ? day * 0.04 : 0 }]}>Tasks · Calc · Notes</Animated.Text>
+            <Animated.Text entering={FadeInDown.delay(T.kicker[0]).duration(T.kicker[1]).easing(ease)} style={[styles.kicker, { color: fgSoft, fontSize: 12 * t, letterSpacing: 2 * t, marginLeft: wide ? day * 0.04 : 0 }]}>Tasks · Calc · Notes</Animated.Text>
             <Animated.View accessible accessibilityRole="header" accessibilityLabel="Daypad" style={[{ alignItems: wide ? 'flex-start' : 'center', marginTop: 10 * gap }, titleLean]}>
               <View style={{ flexDirection: 'row' }}>
                 {'Day'.split('').map((ch, i) => (
-                  <Animated.Text key={i} entering={FadeInDown.delay(T.letter(i)[0]).duration(T.letter(i)[1]).easing(ease)} style={[styles.day, { fontSize: day, lineHeight: day * 0.95, letterSpacing: -0.06 * day }]}>{ch}</Animated.Text>
+                  <Animated.Text key={i} entering={FadeInDown.delay(T.letter(i)[0]).duration(T.letter(i)[1]).easing(ease)} style={[styles.day, { color: fg, fontSize: day, lineHeight: day * 0.95, letterSpacing: -0.06 * day }]}>{ch}</Animated.Text>
                 ))}
               </View>
-              <Animated.Text entering={FadeInRight.delay(T.pad[0]).duration(T.pad[1]).easing(ease)} style={[styles.pad, { fontSize: day * 0.46, lineHeight: day * 0.5, marginTop: -day * 0.08, marginLeft: day * 0.9, letterSpacing: -0.03 * day }]}>pad.</Animated.Text>
+              <Animated.Text entering={FadeInRight.delay(T.pad[0]).duration(T.pad[1]).easing(ease)} style={[styles.pad, { color: accent, fontSize: day * 0.46, lineHeight: day * 0.5, marginTop: -day * 0.08, marginLeft: day * 0.9, letterSpacing: -0.03 * day }]}>pad.</Animated.Text>
             </Animated.View>
           </Animated.View>
 
@@ -255,8 +297,8 @@ export function Landing() {
                   entering={(wide || i % 2 === 0 ? FadeInLeft : FadeInRight).delay(T.point(i)[0]).duration(T.point(i)[1]).easing(ease)}
                   style={[styles.point, { gap: 10 * t }, !wide && { marginLeft: shift * t, marginRight: -shift * t }]}
                 >
-                  <View style={[styles.pointIcon, { width: 26 * t, height: 26 * t, borderRadius: 13 * t }]}><Icon size={14 * t} color="#fff" /></View>
-                  <Text style={[styles.pointText, { fontSize: 13 * t }]}>{text}</Text>
+                  <View style={[styles.pointIcon, { borderColor: fg, width: 26 * t, height: 26 * t, borderRadius: 13 * t }]}><Icon size={14 * t} color={fg} /></View>
+                  <Text style={[styles.pointText, { color: fg, fontSize: 13 * t }]}>{text}</Text>
                 </Animated.View>
               ))}
             </View>
@@ -265,13 +307,17 @@ export function Landing() {
               <Bouncy accessibilityRole="button" accessibilityLabel="Enter Daypad" onPress={() => leave(false)} style={[styles.enter, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 24 * t, boxShadow: `3px 3px 0px ${INK}` }]}>
                 <Text style={[styles.enterText, { fontSize: 15 * t }]}>Enter Daypad →</Text>
               </Bouncy>
-              <Bouncy accessibilityRole="button" accessibilityLabel="Watch demo: enter Daypad with a guided tour" onPress={() => leave(true)} style={[styles.demo, { height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 20 * t }]}>
-                <Text style={[styles.demoText, { fontSize: 15 * t }]}>Watch demo</Text>
+              <Bouncy accessibilityRole="button" accessibilityLabel="Watch demo: enter Daypad with a guided tour" onPress={() => leave(true)} style={[styles.demo, { borderColor: fg, height: 52 * t, borderRadius: 26 * t, paddingHorizontal: 20 * t }]}>
+                <Text style={[styles.demoText, { color: fg, fontSize: 15 * t }]}>Watch demo</Text>
               </Bouncy>
             </Animated.View>
           </Animated.View>
         </Animated.View>
         <View style={{ flex: 1 }} />
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.delay(T.actions[0]).duration(T.actions[1])} style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }, panelFade]}>
+        <HeroPanel ink={fg} top={insets.top} />
       </Animated.View>
     </View>
   );

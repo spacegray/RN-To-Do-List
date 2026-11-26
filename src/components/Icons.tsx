@@ -78,3 +78,45 @@ export function ListCheck({ size = 16, color }: P) {
     </Svg>
   );
 }
+
+export function Palette({ size = 20, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M12 21a9 9 0 0 1 0-18c4.97 0 9 3.58 9 8c0 1.06-.47 2.08-1.32 2.83c-.84.75-1.98 1.17-3.18 1.17h-2.5a2 2 0 0 0-1 3.75a1.3 1.3 0 0 1-1 2.25" />
+      <Path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0" />
+    </Svg>
+  );
+}
+
+export function Close({ size = 18, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.4} strokeLinecap="round">
+      <Path d="M6 6l12 12M18 6L6 18" />
+    </Svg>
+  );
+}
+
+export function Floppy({ size = 18, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M6 4h10l4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2" />
+      <Path d="M10 14a2 2 0 1 0 4 0a2 2 0 1 0-4 0M14 4v4H8V4" />
+    </Svg>
+  );
+}
+
+export function Expand({ size = 16, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6" />
+    </Svg>
+  );
+}
+
+export function Collapse({ size = 16, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M14 10h5M14 10V5M10 14H5M10 14v5M14 10l6-6M10 14l-6 6" />
+    </Svg>
+  );
+}
