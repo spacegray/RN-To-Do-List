@@ -62,21 +62,24 @@ function Shell() {
   const [view, setView] = useState({ tab, dir: 1 });
   if (view.tab !== tab) setView({ tab, dir: order.indexOf(tab) >= order.indexOf(view.tab) ? 1 : -1 });
   const dir = view.dir;
+  const landing = useUI(selectLanding);
 
   useEffect(() => {
-    SystemUI.setBackgroundColorAsync(c.bg).catch(() => {});
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      document.body.style.backgroundColor = c.bg;
+    // on web, while the landing is up, keep index.html's pre-load hero gradient behind it (setBackgroundColorAsync
+    // paints the page body on web, so it waits too); once the landing closes, the theme color replaces it
+    const web = Platform.OS === 'web' && typeof document !== 'undefined';
+    if (!(web && landing)) SystemUI.setBackgroundColorAsync(c.bg).catch(() => {});
+    if (web) {
+      if (!landing) document.body.style.background = c.bg;
       document.documentElement.style.colorScheme = c.mode;
       let meta = document.querySelector('meta[name="theme-color"]');
       if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'theme-color'); document.head.appendChild(meta); }
       meta.setAttribute('content', c.bg);
     }
-  }, [c]);
+  }, [c, landing]);
 
   const Screen = tab === 'tasks' ? TasksScreen : tab === 'calc' ? CalcScreen : NotesScreen;
   const footerOpen = useUI((s) => s.footerOpen);
-  const landing = useUI(selectLanding);
   const footerInset = Math.max(insets.bottom, 4);
 
   return (

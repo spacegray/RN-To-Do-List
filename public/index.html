@@ -17,10 +17,26 @@
       html, body { height: 100%; }
       body { overflow: hidden; margin: 0; background: #FAF8F3; }
       @media (prefers-color-scheme: dark) { body { background: #0E0D14; } }
+      body.preload { background: transparent; }
       #root { display: flex; height: 100%; flex: 1; }
     </style>
+    <script>
+      /* paint the saved hero gradient before the app loads, so the landing is the first thing seen */
+      (function () {
+        var fill = ['#F25AA6', '#D650C4', '#A14FE2', '#6B47F5'], dir = 'diag';
+        try {
+          var s = JSON.parse(localStorage.getItem('daypad.ui') || 'null');
+          var f = s && s.state && s.state.heroFill;
+          if (Array.isArray(f) && f.length >= 2 && f.every(function (c) { return /^#[0-9a-f]{3,8}$/i.test(c); })) fill = f;
+          if (s && s.state && ['down', 'diag', 'across'].indexOf(s.state.heroDir) >= 0) dir = s.state.heroDir;
+        } catch (e) {}
+        var deg = dir === 'down' ? 180 : dir === 'across' ? 90 : 150;
+        document.documentElement.style.background = 'linear-gradient(' + deg + 'deg,' + fill.join(',') + ')';
+        document.documentElement.style.minHeight = '100%';
+      })();
+    </script>
   </head>
-  <body>
+  <body class="preload">
     <noscript>Daypad needs JavaScript to run.</noscript>
     <div id="root"></div>
   </body>

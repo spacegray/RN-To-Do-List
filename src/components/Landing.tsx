@@ -252,7 +252,8 @@ export function Landing() {
 
   return (
     <View style={[StyleSheet.absoluteFill, { overflow: CLIP }]} accessibilityViewIsModal aria-modal {...follow}>
-      <Animated.View entering={FadeIn.duration(1200)} style={[StyleSheet.absoluteFill, fill]}>
+      {/* the fill is there from the first frame (no fade-in), so the app underneath never shows through on load */}
+      <Animated.View style={[StyleSheet.absoluteFill, fill]}>
         {layers.map((l) => (
           <Animated.View key={l.key} entering={l.key ? FadeIn.duration(700).easing(ease) : undefined} style={StyleSheet.absoluteFill}>
             <LinearGradient colors={l.fill as unknown as readonly [string, string, ...string[]]} {...heroPoints(l.dir)} style={StyleSheet.absoluteFill} />
