@@ -103,3 +103,39 @@ in phase 7, when the admin panel exists.
 - Done: Supabase CLI logged in and linked; Docker (OrbStack) installed for the local copy.
 - Later steps: create the Google and GitHub OAuth apps, a free Cloudflare Turnstile key, and add two values to Vercel.
   I'll give exact steps at each one.
+
+## Step 1b in detail: email sign-in and account screens
+
+**Sign-in by email link or code.** The user enters an email; Supabase sends one email containing both a sign-in link
+and a 6-digit code.
+- The link signs you in when opened in the same browser.
+- The code works anywhere: read the email on your phone, type the code on your laptop. It's also how the phone apps
+  will sign in later, without needing deep links.
+- No passwords to store, reset or leak.
+
+**Pieces**
+
+| Piece | What |
+|---|---|
+| `src/store/auth.ts` | Holds the session, user and profile; follows Supabase's sign-in and sign-out events; does nothing when Supabase isn't configured |
+| Account button | Fourth toolbar button: a person icon signed out, your initials (or photo) signed in |
+| Sign-in sheet | Email field, "Email me a sign-in link", "Keep using without an account"; Google and GitHub buttons arrive in 1d |
+| Code sheet | "Check your email": 6-digit code boxes, Resend (after 60 seconds), Use a different email |
+| Account sheet | Initials, name (editable) and email; Sign out. Export and Delete account arrive in 1e |
+| Messages | Wrong or expired code, too many tries, offline, sent again |
+
+**Development uses the local copy.** While developing, the app points at the local Supabase in Docker
+(`.env.development.local`, not committed): sign-in emails land in a local inbox (Mailpit at `127.0.0.1:54324`) with no
+sending limits. Production builds keep using the real project.
+
+**Your setup (one time, in the Supabase dashboard):**
+- Authentication → URL Configuration: Site URL `https://daypad.vercel.app`, plus redirect URL `http://localhost:8090`.
+- Authentication → Emails → "Magic Link" template: add the code (`{{ .Token }}`) to the email. I'll give you the text.
+
+**Not live yet.** Signing in won't save anything until the sync engine (1c), so 1b is merged to `main` but not
+deployed until 1c works.
+
+**Limits to know:** Supabase's built-in email sender only delivers to your own team's addresses and a few emails an
+hour. Before real users can sign up, step 1f connects a proper sender (Resend, free for 3,000 emails a month).
+
+**After your first sign-in:** one SQL line in the dashboard makes your account the super admin.
