@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { Easing, FadeIn, FadeOut, LinearTransition, ZoomIn, interpolate, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming, type SharedValue } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, FadeOut, LinearTransition, ZoomIn, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { Bouncy } from './Bouncy';
 import { Close, Collapse, Expand, Floppy, Palette, Trash } from './Icons';
@@ -173,8 +173,12 @@ function Tray({ fill, slot, z, melt, onPick, onAdd }: { fill: string[]; slot: nu
 
 const FULL_MSG = 'Your custom presets are full, please delete some (or one) to make room';
 
-/** `fade` is an animated opacity for the launcher (the landing's entrance and exit). */
-export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?: ReturnType<typeof useAnimatedStyle> }) {
+/**
+ * The hero color panel. On the landing it brings its own launcher (a labelled Colors pill, with a one-time tip);
+ * inside the app it is opened from the toolbar's palette button instead (`launcher={false}`).
+ * `fade` is an animated opacity for the launcher (the landing's entrance and exit).
+ */
+export function HeroPanel({ ink, top, fade, launcher = true }: { ink: string; top: number; fade?: ReturnType<typeof useAnimatedStyle>; launcher?: boolean }) {
   const { width: W } = useWindowDimensions();
   const fill = useUI((s) => s.heroFill);
   const dir = useUI((s) => s.heroDir);
@@ -185,14 +189,20 @@ export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?:
   const [msg, setMsg] = useState<string | null>(null);
   const melt = useSharedValue(0);
   const saving = useRef(false);
-  const [open, setOpen] = useState(false);
+  const open = useUI((s) => s.heroPanelOpen);
+  const setOpen = useUI((s) => s.setHeroPanel);
+  const seenTip = useUI((s) => s.seenColorTip);
+  const markTip = useUI((s) => s.markColorTip);
+  const reduce = useReducedMotion();
+  const ring = useSharedValue(0);
   // saved between visits: which stop is being edited, and whether a phone last expanded the panel
   const [savedSlot, setSlot] = usePersistentState('hero.slot', 0);
   const slot = Math.min(savedSlot, fill.length - 1);
   const [expanded, setExpanded] = usePersistentState('hero.expanded', false);
   const [draft, setDraft] = useState<string | null>(null); // hex being typed; null shows the stop's color
   const hex = draft ?? fill[slot];
-  const [shown, setShown] = useState(false); // panel stays out of the page (and focus order) while closed
+  const [shown, setShown] = useState(open); // panel stays out of the page (and focus order) while closed
+  if (open && !shown) setShown(true); // opened from outside (the app toolbar)
   const customRef = useRef<ScrollRef>(null);
 
   // phones open a slim panel first (about a third of the screen) with an expand button; desktop is always full
@@ -220,6 +230,13 @@ export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?:
     w.value = withTiming(panelW, { duration: 480, easing: ease });
     body.value = withDelay(260, withTiming(1, { duration: 320, easing: ease }));
   }, [panelW, w, body]);
+  // first visit: the Colors pill sends out two soft rings (after the landing's entrance), then stays still
+  useEffect(() => {
+    if (!launcher || seenTip || reduce) return;
+    ring.value = withDelay(5400, withRepeat(withSequence(withTiming(1, { duration: 1300, easing: ease }), withTiming(0, { duration: 0 })), 2, false));
+  }, [launcher, seenTip, reduce, ring]);
+  const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value === 0 ? 0 : 0.55 * (1 - ring.value), transform: [{ scaleX: 1 + 0.25 * ring.value }, { scaleY: 1 + 0.6 * ring.value }] }));
+
   const panel = useAnimatedStyle(() => ({ width: w.value, opacity: 1 - x.value, transform: [{ translateX: x.value * (w.value + 40) }] }));
   const bodyFade = useAnimatedStyle(() => ({ opacity: body.value }));
 
@@ -271,18 +288,33 @@ export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?:
 
   return (
     <>
-      {/* compact launcher, top right */}
-      <Animated.View style={[styles.launchSpot, { top: top + 16 }, fade]}>
-        <Bouncy
-          accessibilityRole="button"
-          accessibilityLabel={open ? 'Close hero colors' : 'Edit hero colors'}
-          aria-expanded={open}
-          onPress={() => toggle(!open)}
-          style={[styles.launch, { borderColor: ink }]}
-        >
-          <Palette size={20} color={ink} />
-        </Bouncy>
-      </Animated.View>
+      {/* labelled launcher, top right, with a one-time tip under it */}
+      {launcher ? (
+        <Animated.View style={[styles.launchSpot, { top: top + 16 }, fade]}>
+          <View>
+            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.ring, { borderColor: ink }, ringStyle]} />
+              <Bouncy
+              accessibilityRole="button"
+              accessibilityLabel={open ? 'Close colors' : 'Colors: pick your hero colors'}
+              aria-expanded={open}
+              onPress={() => toggle(!open)}
+              style={[styles.launch, { borderColor: ink }]}
+            >
+              <Palette size={18} color={ink} />
+              <Text style={[styles.launchText, { color: ink }]}>Colors</Text>
+            </Bouncy>
+          </View>
+          {!seenTip && !open ? (
+            <Animated.View entering={FadeIn.delay(5400).duration(500)} exiting={FadeOut.duration(200)} style={styles.tip} accessibilityLiveRegion="polite">
+              <View style={styles.tipArrow} />
+              <Text style={styles.tipText}>Make it yours: pick your colors</Text>
+              <Bouncy accessibilityRole="button" accessibilityLabel="Got it, hide this tip" hitSlop={8} onPress={markTip} style={styles.tipBtn}>
+                <Text style={styles.tipBtnText}>Got it</Text>
+              </Bouncy>
+            </Animated.View>
+          ) : null}
+        </Animated.View>
+      ) : null}
 
       {/* clear tap-outside layer: no dimming, so the hero shows its true colors while you edit */}
       {open ? <Pressable accessibilityLabel="Close hero colors" onPress={() => toggle(false)} style={StyleSheet.absoluteFill} /> : null}
@@ -291,7 +323,7 @@ export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?:
         <Animated.View style={[styles.panel, { top: top + 12, borderRadius: slim ? 16 : 22 }, panel, { pointerEvents: open ? 'auto' : 'none' }]} aria-hidden={!open} accessibilityViewIsModal={open}>
           <Animated.View style={[{ flex: 1, paddingHorizontal: z.pad, paddingTop: slim ? 8 : 14 }, bodyFade]}>
             <View style={[styles.head, { gap: slim ? 4 : 8 }]}>
-              <Text style={[styles.title, slim && { fontSize: 13, letterSpacing: 0 }]} accessibilityRole="header" numberOfLines={1}>{slim ? 'Colors' : 'Hero colors'}</Text>
+              <Text style={[styles.title, slim && { fontSize: 13, letterSpacing: 0 }]} accessibilityRole="header" numberOfLines={1}>{slim ? 'Colors' : 'Your colors'}</Text>
               {phone ? (
                 <Bouncy accessibilityRole="button" accessibilityLabel={expanded ? 'Collapse color panel' : 'Expand color panel'} aria-expanded={expanded} hitSlop={4} onPress={resize}
                   style={[styles.close, { width: z.btn, height: z.btn, borderRadius: z.btn / 2, borderWidth: slim ? 1.5 : 2 }]}>
@@ -412,8 +444,15 @@ export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?:
 }
 
 const styles = StyleSheet.create({
-  launchSpot: { position: 'absolute', right: 16 },
-  launch: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)' },
+  launchSpot: { position: 'absolute', right: 16, alignItems: 'flex-end' },
+  launch: { height: 40, flexDirection: 'row', gap: 6, paddingLeft: 10, paddingRight: 14, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.22)' },
+  launchText: { fontFamily: font.bold, fontSize: 14 },
+  ring: { borderRadius: 20, borderWidth: 2 },
+  tip: { marginTop: 12, width: 236, backgroundColor: INK, borderRadius: 12, paddingHorizontal: 12, paddingTop: 9, paddingBottom: 7 },
+  tipArrow: { position: 'absolute', top: -6, right: 34, width: 12, height: 12, backgroundColor: INK, transform: [{ rotate: '45deg' }] },
+  tipText: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: PAPER },
+  tipBtn: { alignSelf: 'flex-end', marginTop: 4, paddingVertical: 2 },
+  tipBtnText: { fontFamily: font.bold, fontSize: 13, color: palette.lime },
   panel: { position: 'absolute', right: 12, bottom: 12, backgroundColor: PAPER, borderWidth: 2, borderColor: INK, boxShadow: `5px 5px 0px ${INK}`, overflow: 'hidden' },
   head: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   title: { flex: 1, fontFamily: font.black, fontSize: 20, color: INK, letterSpacing: -0.4 },

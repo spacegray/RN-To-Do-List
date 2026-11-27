@@ -20,6 +20,7 @@ import { Backdrop } from './src/components/Backdrop';
 import { TabBar } from './src/components/TabBar';
 import { Footer, FooterToggle, FOOTER_H } from './src/components/Footer';
 import { Landing } from './src/components/Landing';
+import { HeroPanel } from './src/components/HeroPanel';
 import { Toast } from './src/components/Toast';
 import { HelpTour } from './src/components/HelpTour';
 import { ThemeReveal } from './src/components/ThemeReveal';
@@ -103,6 +104,12 @@ function Shell() {
       <Footer inset={footerInset} />
       <NoteEditorHost />
       <Toast bottom={60 + 18 + footerInset + (footerOpen ? FOOTER_H : 0) + 12} />
+      {/* the color panel, opened from the toolbar's palette button (the landing brings its own) */}
+      {landing ? null : (
+        <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+          <HeroPanel ink={c.ink} top={insets.top} launcher={false} />
+        </View>
+      )}
       {landing ? <Landing /> : null}
       <HelpTour />
       <ThemeReveal />

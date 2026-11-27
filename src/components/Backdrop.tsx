@@ -3,6 +3,8 @@ import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { useTheme } from '../theme/useTheme';
+import { useUI } from '../store/ui';
+import { isLightFill } from './HeroPanel';
 
 const CELL = 28;
 /** matches the app column's maxWidth in App.tsx; on wider screens the bubble stays beside the column */
@@ -13,6 +15,10 @@ export const Backdrop = memo(function Backdrop() {
   const c = useTheme();
   const { width, height } = useWindowDimensions();
   const reduce = useReducedMotion();
+  // the bubble takes its colors from the ones picked in the color panel (the almost-white first stop is skipped)
+  const fill = useUI((s) => s.heroFill);
+  const n = fill.length;
+  const tint = { a: fill[n > 2 ? 1 : 0], b: fill[n - 1], d: fill[Math.max(0, n - 2)] };
   const t = useSharedValue(0);
 
   useEffect(() => {
@@ -28,7 +34,8 @@ export const Backdrop = memo(function Backdrop() {
   const rows = Math.ceil(height / CELL);
   // margin from the window's right edge: 0 on phones, the empty space beside the column on wide screens
   const side = Math.max(0, (width - COLUMN) / 2);
-  const blob = c.mode === "dark" ? 0.7 : 0.6;
+  // pale picks (like Oat) would glare on the dark page, so they sit back further there
+  const blob = c.mode === "dark" ? (isLightFill(fill) ? 0.32 : 0.7) : 0.6;
 
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: c.bg, overflow: "hidden" }]}>
@@ -39,9 +46,9 @@ export const Backdrop = memo(function Backdrop() {
         <View key={`h${i}`} style={{ position: 'absolute', top: i * CELL, left: 0, right: 0, height: 1, backgroundColor: c.grid }} />
       ))}
       <View style={[styles.mesh, { right: styles.mesh.right + side }]}>
-        <Animated.View style={[styles.dot, { backgroundColor: c.pink, opacity: blob, top: 10, left: 40 }, a]} />
-        <Animated.View style={[styles.dot, { backgroundColor: c.violet, opacity: blob, top: 90, left: 140 }, b]} />
-        <Animated.View style={[styles.dot, { backgroundColor: c.coral, opacity: blob * 0.85, top: 170, left: 60, width: 150, height: 150 }, d]} />
+        <Animated.View style={[styles.dot, { backgroundColor: tint.a, opacity: blob, top: 10, left: 40 }, a]} />
+        <Animated.View style={[styles.dot, { backgroundColor: tint.b, opacity: blob, top: 90, left: 140 }, b]} />
+        <Animated.View style={[styles.dot, { backgroundColor: tint.d, opacity: blob * 0.85, top: 170, left: 60, width: 150, height: 150 }, d]} />
         <BlurView intensity={80} tint="default" style={StyleSheet.absoluteFill} />
       </View>
     </View>

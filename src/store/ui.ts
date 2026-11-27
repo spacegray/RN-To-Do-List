@@ -35,6 +35,10 @@ type UIState = {
   heroDir: HeroDir;
   /** gradients saved from "Build your own", at most HERO_CUSTOM_MAX */
   heroCustom: HeroCustom[];
+  /** the color panel, opened from the landing's Colors pill or the app toolbar (not saved) */
+  heroPanelOpen: boolean;
+  /** the one-time "pick your colors" tip under the landing's Colors pill has been dismissed */
+  seenColorTip: boolean;
   footerPinned: boolean;
   setTab: (t: Tab) => void;
   setTheme: (t: ThemePref) => void;
@@ -49,6 +53,8 @@ type UIState = {
   /** saves the current hero gradient; 'full' when there's no room, 'dupe' when it's already saved */
   saveHeroCustom: () => 'saved' | 'full' | 'dupe';
   removeHeroCustom: (id: string) => void;
+  setHeroPanel: (open: boolean) => void;
+  markColorTip: () => void;
   setFooterFromScroll: (open: boolean) => void;
 };
 
@@ -67,6 +73,8 @@ export const useUI = create<UIState>()(
       heroFill: HERO_DEFAULT,
       heroDir: 'diag',
       heroCustom: [],
+      heroPanelOpen: false,
+      seenColorTip: false,
       footerPinned: false,
       setTab: (tab) => set({ tab, tourStep: 0 }),
       setTheme: (theme) => set({ theme }),
@@ -85,7 +93,9 @@ export const useUI = create<UIState>()(
         return 'saved';
       },
       removeHeroCustom: (id) => set((s) => ({ heroCustom: s.heroCustom.filter((c) => c.id !== id) })),
-      closeLanding: () => set({ landingOpen: false, seenLanding: true }),
+      setHeroPanel: (heroPanelOpen) => set(heroPanelOpen ? { heroPanelOpen, seenColorTip: true } : { heroPanelOpen }),
+      markColorTip: () => set({ seenColorTip: true }),
+      closeLanding: () => set({ landingOpen: false, seenLanding: true, heroPanelOpen: false }),
       toggleFooter: () => { const open = !get().footerOpen; set({ footerOpen: open, footerPinned: open }); },
       setFooterFromScroll: (open) => {
         const s = get();
@@ -95,8 +105,8 @@ export const useUI = create<UIState>()(
     }),
     persisted('ui', {
       version: 1,
-      partialize: ({ tab, theme, seenTour, seenLanding, heroFill, heroDir, heroCustom, footerOpen, footerPinned }) =>
-        ({ tab, theme, seenTour, seenLanding, heroFill, heroDir, heroCustom, footerOpen, footerPinned }),
+      partialize: ({ tab, theme, seenTour, seenLanding, heroFill, heroDir, heroCustom, seenColorTip, footerOpen, footerPinned }) =>
+        ({ tab, theme, seenTour, seenLanding, heroFill, heroDir, heroCustom, seenColorTip, footerOpen, footerPinned }),
     }),
   ),
 );

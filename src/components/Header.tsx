@@ -7,6 +7,7 @@ import { font, minTap, motion, stroke, type } from '../theme/tokens';
 import { useUI } from '../store/ui';
 import { useReveal } from './ThemeReveal';
 import { useTourTarget } from './tour';
+import { Palette } from './Icons';
 
 /** Sun and moon drawn with plain views so the icon can morph between them. */
 function SunMoon({ dark }: { dark: boolean }) {
@@ -49,6 +50,7 @@ export function IconButton({ label, onPress, children, refCb }: { label: string;
 export function Header({ label, title, accent }: { label: string; title?: string; accent?: string }) {
   const c = useTheme();
   const openTour = useUI((s) => s.openTour);
+  const openColors = useUI((s) => s.setHeroPanel);
   const startReveal = useReveal((s) => s.start);
   const setTheme = useUI((s) => s.setTheme);
   const reduce = useReducedMotion();
@@ -67,6 +69,9 @@ export function Header({ label, title, accent }: { label: string; title?: string
       <View style={styles.row}>
         <Text style={[type.label, { color: c.muted }]} accessibilityRole="text">{label}</Text>
         <View style={styles.icons}>
+          <IconButton label="Colors: pick your colors" onPress={() => openColors(true)}>
+            <Palette size={20} color={c.ink} />
+          </IconButton>
           <IconButton label="How this works" onPress={openTour}>
             <Text style={[styles.q, { color: c.ink }]}>?</Text>
           </IconButton>
