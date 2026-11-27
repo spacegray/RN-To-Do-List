@@ -1,6 +1,6 @@
 # Phase 1 plan: accounts, database and security
 
-Status: **1a and 1b done** (1b tested against the local copy: email code and link sign-in, name change, reload, sign out). Next: 1c.
+Status: **1a and 1b done** (1b tested against the local copy: email code and link sign-in, name change, reload, sign out). **1c planned, waiting for approval.**
 
 ## Goal
 
@@ -139,3 +139,59 @@ deployed until 1c works.
 hour. Before real users can sign up, step 1f connects a proper sender (Resend, free for 3,000 emails a month).
 
 **After your first sign-in:** one SQL line in the dashboard makes your account the super admin.
+
+## Step 1c in detail: sync
+
+**What syncs:** tasks, notes, and settings (theme, colours, saved colour sets, tour seen). **Stays on each device:**
+reminder notification IDs and "already fired" flags, the calculator's working tape, drafts, open tab, filters.
+
+### Local changes first
+
+| Change | Why |
+|---|---|
+| IDs become UUIDs, once, on load (tasks and notes stores move to version 2) | The database uses UUIDs; every device must agree on an item's ID |
+| Every task and note gets a `changedAt` stamp, set by each change that should sync (add, edit, done, priority, pin, reminder time, undo delete) | "Newest change wins" needs it. Notes keep `updatedAt` for sorting by last edit |
+| A small `daypad.sync` store (saved on the device) | Which account this device last synced with, the last time it pulled, the default list's ID, and what it has already sent |
+
+### The engine (`src/lib/sync.ts`, pure functions, unit-tested)
+
+- **Find what to send:** compare the local items with what was last sent. New or changed items (newer `changedAt`)
+  are upserted; items that were sent before but are gone locally are sent as deleted (`deleted_at`).
+- **Apply what arrives:** a pulled row replaces the local item only if it's newer; a pulled delete removes it only if
+  the local copy isn't newer. Pulled items keep this device's reminder details, and future reminders are scheduled.
+- **Convert rows:** local times are milliseconds, the database uses timestamps; tasks get the account's "Tasks" list.
+
+### When it runs (`src/store/sync.ts`)
+
+- Right after sign-in, a few seconds after any change, when the app comes back to the foreground or back online, and
+  every 30 seconds while open.
+- **Send:** changed items in batches of 100. **Pull:** rows changed since the last pull (with a few seconds of overlap,
+  since applying a row twice is harmless), 500 at a time.
+- Failures retry with growing waits (5 s, 15 s, 1 min…). Nothing is lost while offline: unsent changes are simply
+  still "newer than what was sent".
+
+### First sign-in on a device
+
+- **Account is empty:** everything on the device is sent up. Toast: "Moved 4 tasks and 2 notes into your account."
+- **Account already has things** (signing in on a second device): both are combined, nothing overwritten. The sample
+  tasks and notes Daypad starts with are dropped if untouched, so they don't pile up across devices.
+- **This device last synced with a different account:** ask first. "This device has tasks from another account.
+  Add them to this account, or start fresh?" Start fresh keeps a one-step undo until the app closes.
+
+### Status you can see
+
+| Where | What |
+|---|---|
+| Dot on the avatar | Green: synced · Amber: syncing or changes waiting · Grey: offline · Red: couldn't sync |
+| Account sheet | "Synced just now" / "Syncing…" / "Offline. Changes will sync when you're back." / "Couldn't sync. Try again" button |
+
+### Tests
+
+- Unit tests for the engine: what gets sent, newest-wins in both directions, deletes and undo, sample-task cleanup,
+  row conversion, ID migration.
+- End to end in the browser against the local copy: sign in, add and edit tasks, check the database; clear the
+  browser's storage to act as a second device, sign in, and see everything arrive; edit on both and confirm the
+  newest edit wins; go offline, make changes, come back.
+
+**After 1c:** the app is safe to deploy (your own email can sign in with the standard Supabase emails); step 1f adds the
+Vercel settings and the proper email sender for everyone else.
