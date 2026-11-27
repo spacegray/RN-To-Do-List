@@ -99,6 +99,9 @@ export function applyPull<T extends Syncable>(
     // otherwise the local copy is newer and will be sent next
   }
 
+  // nothing new: hand back the same list, so re-pulling known rows doesn't look like a change (and sync again)
+  if (!added.length && !changed.length && !removed.length) return { items: local, sent: next, added, changed, removed };
+
   // keep the existing order; new arrivals slot in newest-first by creation time
   const kept = local.filter((i) => byId.has(i.id)).map((i) => byId.get(i.id)!);
   const items = added.length

@@ -57,6 +57,12 @@ test('applyPull: the newer change wins in both directions', () => {
   assert.equal(planPush(r.items, r.sent).upserts.map((t) => t.id).join(), 'a');
 });
 
+test('applyPull hands back the same list when nothing is new, so re-pulled rows do not trigger another sync', () => {
+  const local = [task('a', 50), task('b', 60)];
+  const r = applyPull(local, [{ item: task('a', 50), deleted: false }, { item: task('b', 40), deleted: false }], {}, keep);
+  assert.equal(r.items, local);
+});
+
 test('applyPull: a tie confirms the local copy is on the server', () => {
   const r = applyPull([task('a', 50)], [{ item: task('a', 50), deleted: false }], {}, keep);
   assert.equal(r.sent.a, 50);

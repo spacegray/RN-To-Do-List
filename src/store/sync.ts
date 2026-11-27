@@ -125,7 +125,7 @@ async function pullTable(table: 'tasks' | 'notes'): Promise<{ live: number; adde
     if (table === 'tasks') {
       const incoming = rows.map((r) => rowToTask(r as never)) as Incoming<LocalTask>[];
       const r = applyPull(useTasks.getState().tasks as LocalTask[], incoming, sent.tasks, keepTaskDevice);
-      useTasks.setState({ tasks: r.items as Task[] });
+      if (r.items !== useTasks.getState().tasks) useTasks.setState({ tasks: r.items as Task[] });
       useSync.setState((s) => ({ sent: { ...s.sent, tasks: r.sent } }));
       added += r.added.length;
       ringLater([...r.added, ...r.changed].filter((t) => t.due && !t.done && !t.fired && !t.notifId)
@@ -133,7 +133,7 @@ async function pullTable(table: 'tasks' | 'notes'): Promise<{ live: number; adde
     } else {
       const incoming = rows.map((r) => rowToNote(r as never)) as Incoming<LocalNote>[];
       const r = applyPull(useNotes.getState().notes as LocalNote[], incoming, sent.notes, keepNoteDevice);
-      useNotes.setState({ notes: r.items as Note[] });
+      if (r.items !== useNotes.getState().notes) useNotes.setState({ notes: r.items as Note[] });
       useSync.setState((s) => ({ sent: { ...s.sent, notes: r.sent } }));
       added += r.added.length;
       ringLater([...r.added, ...r.changed].filter((n) => n.reminder && !n.fired && !n.notifId)
