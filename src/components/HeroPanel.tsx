@@ -173,7 +173,8 @@ function Tray({ fill, slot, z, melt, onPick, onAdd }: { fill: string[]; slot: nu
 
 const FULL_MSG = 'Your custom presets are full, please delete some (or one) to make room';
 
-export function HeroPanel({ ink, top }: { ink: string; top: number }) {
+/** `fade` is an animated opacity for the launcher (the landing's entrance and exit). */
+export function HeroPanel({ ink, top, fade }: { ink: string; top: number; fade?: ReturnType<typeof useAnimatedStyle> }) {
   const { width: W } = useWindowDimensions();
   const fill = useUI((s) => s.heroFill);
   const dir = useUI((s) => s.heroDir);
@@ -271,15 +272,17 @@ export function HeroPanel({ ink, top }: { ink: string; top: number }) {
   return (
     <>
       {/* compact launcher, top right */}
-      <Bouncy
-        accessibilityRole="button"
-        accessibilityLabel={open ? 'Close hero colors' : 'Edit hero colors'}
-        aria-expanded={open}
-        onPress={() => toggle(!open)}
-        style={[styles.launch, { borderColor: ink, top: top + 16 }]}
-      >
-        <Palette size={20} color={ink} />
-      </Bouncy>
+      <Animated.View style={[styles.launchSpot, { top: top + 16 }, fade]}>
+        <Bouncy
+          accessibilityRole="button"
+          accessibilityLabel={open ? 'Close hero colors' : 'Edit hero colors'}
+          aria-expanded={open}
+          onPress={() => toggle(!open)}
+          style={[styles.launch, { borderColor: ink }]}
+        >
+          <Palette size={20} color={ink} />
+        </Bouncy>
+      </Animated.View>
 
       {/* clear tap-outside layer: no dimming, so the hero shows its true colors while you edit */}
       {open ? <Pressable accessibilityLabel="Close hero colors" onPress={() => toggle(false)} style={StyleSheet.absoluteFill} /> : null}
@@ -409,7 +412,8 @@ export function HeroPanel({ ink, top }: { ink: string; top: number }) {
 }
 
 const styles = StyleSheet.create({
-  launch: { position: 'absolute', right: 16, width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)' },
+  launchSpot: { position: 'absolute', right: 16 },
+  launch: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)' },
   panel: { position: 'absolute', right: 12, bottom: 12, backgroundColor: PAPER, borderWidth: 2, borderColor: INK, boxShadow: `5px 5px 0px ${INK}`, overflow: 'hidden' },
   head: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   title: { flex: 1, fontFamily: font.black, fontSize: 20, color: INK, letterSpacing: -0.4 },

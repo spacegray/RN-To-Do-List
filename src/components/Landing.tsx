@@ -180,6 +180,7 @@ export function Landing() {
   const openTour = useUI((s) => s.openTour);
   const out = useSharedValue(0);
   const drift = useSharedValue(0.5);
+  const appear = useSharedValue(0); // color-panel fade-in
   const leaving = useRef(false);
 
   // hero colors from the color panel; a change crossfades over the previous gradient
@@ -193,6 +194,11 @@ export function Landing() {
   const fg = light ? INK : '#FFFFFF';
   const fgSoft = light ? '#3D3B45' : 'rgba(255,255,255,0.92)';
   const accent = light ? palette.violet : palette.lime;
+
+  // the color-panel launcher's fade-in (with panelFade below, so it also fades out on leaving)
+  useEffect(() => {
+    appear.value = reduce ? 1 : withDelay(T.actions[0], withTiming(1, { duration: T.actions[1] }));
+  }, [reduce, appear]);
 
   useEffect(() => {
     if (!reduce) drift.value = withDelay(4200, withRepeat(withTiming(1, { duration: 6250, easing: Easing.inOut(Easing.sin) }), -1, true));
@@ -244,7 +250,7 @@ export function Landing() {
   };
 
   const fill = useAnimatedStyle(() => ({ opacity: interpolate(out.value, [0.2, 0.8], [1, 0], 'clamp') }));
-  const panelFade = useAnimatedStyle(() => ({ opacity: interpolate(out.value, [0, 0.2], [1, 0], 'clamp') }));
+  const panelFade = useAnimatedStyle(() => ({ opacity: appear.value * interpolate(out.value, [0, 0.2], [1, 0], 'clamp') }));
   const content = useAnimatedStyle(() => ({
     opacity: interpolate(out.value, [0, 0.4], [1, 0], 'clamp'),
     transform: [{ translateY: interpolate(out.value, [0, 0.4], [0, -32], 'clamp') }],
@@ -317,9 +323,11 @@ export function Landing() {
         <View style={{ flex: 1 }} />
       </Animated.View>
 
-      <Animated.View entering={FadeIn.delay(T.actions[0]).duration(T.actions[1])} style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }, panelFade]}>
-        <HeroPanel ink={fg} top={insets.top} />
-      </Animated.View>
+      {/* full-screen layer that must let clicks through to the buttons: react-native-web drops 'box-none' given
+          as a style (it then swallows every click), so it is passed as the prop, on a plain View; the fade is on the launcher */}
+      <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+        <HeroPanel ink={fg} top={insets.top} fade={panelFade} />
+      </View>
     </View>
   );
 }
