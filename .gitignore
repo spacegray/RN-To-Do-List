@@ -44,3 +44,4 @@ yarn-error.*
 .claude/
 .vercel
 .env*
+!.env.example

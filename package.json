@@ -7,6 +7,7 @@
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo/metro-runtime": "~58.0.17",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.119.2",
     "expo": "~58.0.26",
     "expo-blur": "~58.0.6",
     "expo-clipboard": "~58.0.4",
@@ -42,7 +43,8 @@
     "lint": "eslint .",
     "web:build": "expo export -p web",
     "test": "node --test tests/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "supabase:check": "node scripts/check-supabase.mjs"
   },
   "private": true,
   "description": "Tasks, a calculator with a running tape, and notes with reminders. React Native + Expo (iOS, Android, web).",
