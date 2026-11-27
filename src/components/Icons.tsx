@@ -120,3 +120,21 @@ export function Collapse({ size = 16, color }: P) {
     </Svg>
   );
 }
+
+export function User({ size = 20, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+      <Path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+    </Svg>
+  );
+}
+
+export function LogOut({ size = 18, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+      <Path d="M9 16l-4-4 4-4M5 12h11" />
+    </Svg>
+  );
+}

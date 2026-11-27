@@ -1,6 +1,6 @@
 # Phase 1 plan: accounts, database and security
 
-Status: **1a done** (tables, access rules and purge applied to the project; 17 database tests pass with `npm run db:test`). Next: 1b.
+Status: **1a and 1b done** (1b tested against the local copy: email code and link sign-in, name change, reload, sign out). Next: 1c.
 
 ## Goal
 
@@ -92,7 +92,7 @@ in phase 7, when the admin panel exists.
 | Step | What | Ease |
 |---|---|---|
 | 1a | **Done.** Supabase CLI, migrations for the five tables, access rules, triggers (new user → profile, settings and a "Tasks" list; `updated_at` stamps), generated types, 17 database tests | 🟡 |
-| 1b | Email-link sign-in, account button and sheets, sign out | 🟢 |
+| 1b | **Done.** Email link and code sign-in, account button and sheets, name change, sign out | 🟢 |
 | 1c | Sync engine and first-sign-in merge, with unit tests | 🟡 / 🔴 |
 | 1d | Google and GitHub sign-in | 🟢 (plus your setup in Google and GitHub) |
 | 1e | Privacy and terms pages, Turnstile, export data, delete account | 🟡 |

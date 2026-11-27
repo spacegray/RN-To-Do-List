@@ -7,7 +7,10 @@ import { font, minTap, motion, stroke, type } from '../theme/tokens';
 import { useUI } from '../store/ui';
 import { useReveal } from './ThemeReveal';
 import { useTourTarget } from './tour';
-import { Palette } from './Icons';
+import { Palette, User } from './Icons';
+import { Avatar } from './AccountSheet';
+import { useAuth } from '../store/auth';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 /** Sun and moon drawn with plain views so the icon can morph between them. */
 function SunMoon({ dark }: { dark: boolean }) {
@@ -51,6 +54,9 @@ export function Header({ label, title, accent }: { label: string; title?: string
   const c = useTheme();
   const openTour = useUI((s) => s.openTour);
   const openColors = useUI((s) => s.setHeroPanel);
+  const openAccount = useAuth((s) => s.openAccount);
+  const signedIn = useAuth((s) => !!s.session);
+  const authReady = useAuth((s) => s.ready);
   const startReveal = useReveal((s) => s.start);
   const setTheme = useUI((s) => s.setTheme);
   const reduce = useReducedMotion();
@@ -82,6 +88,17 @@ export function Header({ label, title, accent }: { label: string; title?: string
           >
             <SunMoon dark={isDark} />
           </IconButton>
+          {isSupabaseConfigured && authReady ? (
+            signedIn ? (
+              <Bouncy accessibilityRole="button" accessibilityLabel="Your account" onPress={openAccount} hitSlop={4}>
+                <Avatar size={minTap} />
+              </Bouncy>
+            ) : (
+              <IconButton label="Sign in" onPress={openAccount}>
+                <User size={20} color={c.ink} />
+              </IconButton>
+            )
+          ) : null}
         </View>
       </View>
       {title ? (
