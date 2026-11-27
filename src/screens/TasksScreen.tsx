@@ -23,7 +23,8 @@ function greeting(d = new Date()) {
 
 function Progress({ value }: { value: number }) {
   const c = useTheme();
-  const heroFill = useUI((s) => s.heroFill); // the bar takes the colors picked in the color panel
+  const heroFill = useUI((s) => s.heroFill); // in light mode the bar takes the colors picked in the color panel
+  const barColors = c.mode === 'dark' ? c.gradient : (heroFill as unknown as readonly [string, string, ...string[]]);
   const v = useSharedValue(0);
   const [w, setW] = useState(0);
   useEffect(() => { v.value = withSpring(value, motion.spring); }, [value, v]);
@@ -37,7 +38,7 @@ function Progress({ value }: { value: number }) {
       style={[styles.track, { borderColor: c.edge, backgroundColor: c.card }]}
     >
       <Animated.View style={[styles.fill, fill]}>
-        <LinearGradient colors={heroFill as unknown as readonly [string, string, ...string[]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={barColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
       </Animated.View>
     </View>
   );

@@ -4,7 +4,6 @@ import { BlurView } from 'expo-blur';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { useTheme } from '../theme/useTheme';
 import { useUI } from '../store/ui';
-import { isLightFill } from './HeroPanel';
 
 const CELL = 28;
 /** matches the app column's maxWidth in App.tsx; on wider screens the bubble stays beside the column */
@@ -15,10 +14,11 @@ export const Backdrop = memo(function Backdrop() {
   const c = useTheme();
   const { width, height } = useWindowDimensions();
   const reduce = useReducedMotion();
-  // the bubble takes its colors from the ones picked in the color panel (the almost-white first stop is skipped)
+  // in light mode the bubble takes the colors picked in the color panel (the almost-white first stop is skipped);
+  // dark mode keeps the theme's own pink, violet and coral
   const fill = useUI((s) => s.heroFill);
   const n = fill.length;
-  const tint = { a: fill[n > 2 ? 1 : 0], b: fill[n - 1], d: fill[Math.max(0, n - 2)] };
+  const tint = c.mode === 'dark' ? { a: c.pink, b: c.violet, d: c.coral } : { a: fill[n > 2 ? 1 : 0], b: fill[n - 1], d: fill[Math.max(0, n - 2)] };
   const t = useSharedValue(0);
 
   useEffect(() => {
@@ -34,8 +34,7 @@ export const Backdrop = memo(function Backdrop() {
   const rows = Math.ceil(height / CELL);
   // margin from the window's right edge: 0 on phones, the empty space beside the column on wide screens
   const side = Math.max(0, (width - COLUMN) / 2);
-  // pale picks (like Oat) would glare on the dark page, so they sit back further there
-  const blob = c.mode === "dark" ? (isLightFill(fill) ? 0.32 : 0.7) : 0.6;
+  const blob = c.mode === "dark" ? 0.7 : 0.6;
 
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: c.bg, overflow: "hidden" }]}>

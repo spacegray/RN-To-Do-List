@@ -37,7 +37,7 @@ type UIState = {
   heroCustom: HeroCustom[];
   /** the color panel, opened from the landing's Colors pill or the app toolbar (not saved) */
   heroPanelOpen: boolean;
-  /** the one-time "pick your colors" tip under the landing's Colors pill has been dismissed */
+  /** the color panel has been opened once, so the landing's Colors pill no longer pulses */
   seenColorTip: boolean;
   footerPinned: boolean;
   setTab: (t: Tab) => void;
@@ -54,7 +54,6 @@ type UIState = {
   saveHeroCustom: () => 'saved' | 'full' | 'dupe';
   removeHeroCustom: (id: string) => void;
   setHeroPanel: (open: boolean) => void;
-  markColorTip: () => void;
   setFooterFromScroll: (open: boolean) => void;
 };
 
@@ -94,7 +93,6 @@ export const useUI = create<UIState>()(
       },
       removeHeroCustom: (id) => set((s) => ({ heroCustom: s.heroCustom.filter((c) => c.id !== id) })),
       setHeroPanel: (heroPanelOpen) => set(heroPanelOpen ? { heroPanelOpen, seenColorTip: true } : { heroPanelOpen }),
-      markColorTip: () => set({ seenColorTip: true }),
       closeLanding: () => set({ landingOpen: false, seenLanding: true, heroPanelOpen: false }),
       toggleFooter: () => { const open = !get().footerOpen; set({ footerOpen: open, footerPinned: open }); },
       setFooterFromScroll: (open) => {

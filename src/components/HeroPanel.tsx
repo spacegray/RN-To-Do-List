@@ -174,7 +174,7 @@ function Tray({ fill, slot, z, melt, onPick, onAdd }: { fill: string[]; slot: nu
 const FULL_MSG = 'Your custom presets are full, please delete some (or one) to make room';
 
 /**
- * The hero color panel. On the landing it brings its own launcher (a labelled Colors pill, with a one-time tip);
+ * The hero color panel. On the landing it brings its own launcher (a labelled Colors pill);
  * inside the app it is opened from the toolbar's palette button instead (`launcher={false}`).
  * `fade` is an animated opacity for the launcher (the landing's entrance and exit).
  */
@@ -192,7 +192,6 @@ export function HeroPanel({ ink, top, fade, launcher = true }: { ink: string; to
   const open = useUI((s) => s.heroPanelOpen);
   const setOpen = useUI((s) => s.setHeroPanel);
   const seenTip = useUI((s) => s.seenColorTip);
-  const markTip = useUI((s) => s.markColorTip);
   const reduce = useReducedMotion();
   const ring = useSharedValue(0);
   // saved between visits: which stop is being edited, and whether a phone last expanded the panel
@@ -288,7 +287,7 @@ export function HeroPanel({ ink, top, fade, launcher = true }: { ink: string; to
 
   return (
     <>
-      {/* labelled launcher, top right, with a one-time tip under it */}
+      {/* labelled launcher, top right */}
       {launcher ? (
         <Animated.View style={[styles.launchSpot, { top: top + 16 }, fade]}>
           <View>
@@ -304,15 +303,6 @@ export function HeroPanel({ ink, top, fade, launcher = true }: { ink: string; to
               <Text style={[styles.launchText, { color: ink }]}>Colors</Text>
             </Bouncy>
           </View>
-          {!seenTip && !open ? (
-            <Animated.View entering={FadeIn.delay(5400).duration(500)} exiting={FadeOut.duration(200)} style={styles.tip} accessibilityLiveRegion="polite">
-              <View style={styles.tipArrow} />
-              <Text style={styles.tipText}>Make it yours: pick your colors</Text>
-              <Bouncy accessibilityRole="button" accessibilityLabel="Got it, hide this tip" hitSlop={8} onPress={markTip} style={styles.tipBtn}>
-                <Text style={styles.tipBtnText}>Got it</Text>
-              </Bouncy>
-            </Animated.View>
-          ) : null}
         </Animated.View>
       ) : null}
 
@@ -448,11 +438,6 @@ const styles = StyleSheet.create({
   launch: { height: 40, flexDirection: 'row', gap: 6, paddingLeft: 10, paddingRight: 14, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.22)' },
   launchText: { fontFamily: font.bold, fontSize: 14 },
   ring: { borderRadius: 20, borderWidth: 2 },
-  tip: { marginTop: 12, width: 236, backgroundColor: INK, borderRadius: 12, paddingHorizontal: 12, paddingTop: 9, paddingBottom: 7 },
-  tipArrow: { position: 'absolute', top: -6, right: 34, width: 12, height: 12, backgroundColor: INK, transform: [{ rotate: '45deg' }] },
-  tipText: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: PAPER },
-  tipBtn: { alignSelf: 'flex-end', marginTop: 4, paddingVertical: 2 },
-  tipBtnText: { fontFamily: font.bold, fontSize: 13, color: palette.lime },
   panel: { position: 'absolute', right: 12, bottom: 12, backgroundColor: PAPER, borderWidth: 2, borderColor: INK, boxShadow: `5px 5px 0px ${INK}`, overflow: 'hidden' },
   head: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   title: { flex: 1, fontFamily: font.black, fontSize: 20, color: INK, letterSpacing: -0.4 },
