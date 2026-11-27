@@ -205,3 +205,45 @@ Vercel settings and the proper email sender for everyone else.
 - With the connection gone, the Supabase library retries for about 15 seconds before the status changes to "Offline".
 - Not tested yet: "Add them to my account" (same path as a first sign-in, which is tested), and phone notifications for
   reminders that arrive from another device (needs a phone build).
+
+## Step 1d in detail: Google and GitHub sign-in
+
+**How it works (web).** "Continue with Google" or "Continue with GitHub" sends you to that site to approve, then back to
+Daypad signed in. Supabase handles the exchange (the same one-time `?code=` as email links, so nothing new to secure).
+Sync, the status dot and the account sheet work exactly as with email.
+
+**What the app changes**
+
+| Piece | What |
+|---|---|
+| Sign-in sheet | "Continue with Google" and "Continue with GitHub" buttons above the email field, with an "or" divider. Google's button follows Google's branding rules (their "G" logo, "Continue with Google") |
+| Photo | Your Google or GitHub photo shows in the toolbar and account sheet, falling back to initials |
+| Errors | Cancelled or failed sign-ins come back with a plain message in the sheet ("Google sign-in was cancelled"), and the address bar is cleaned up |
+| Phones | The buttons are web-only for now; phone apps need deep links (phase 12) |
+
+**Same email, different ways in.** Signing in with Google using the same verified email as your email-code account
+lands in the same account (Supabase links verified matching emails). GitHub accounts with a private or unverified
+email may become a separate account; the account sheet will show which way you signed in.
+
+**Your setup**
+
+*Google (Google Cloud console, about 10 minutes)*
+1. Create a project named Daypad.
+2. Google Auth Platform → Branding: app name **Daypad**, your support email. Audience: **External**, kept in
+   **Testing** for now, with your two emails added as test users. Publishing comes after the privacy and terms pages (1e).
+3. Clients → Create client → **Web application**:
+   - Authorized JavaScript origins: `https://daypad.vercel.app`, `http://localhost:8090`
+   - Authorized redirect URI: `https://vyuacpvdltolbeqzemiu.supabase.co/auth/v1/callback`
+4. Copy the Client ID and Client secret into Supabase → Authentication → Sign In / Providers → **Google**, and enable it.
+
+*GitHub (GitHub settings, about 3 minutes)*
+1. Settings → Developer settings → OAuth Apps → **New OAuth App**:
+   - Name **Daypad**, Homepage `https://daypad.vercel.app`
+   - Authorization callback URL `https://vyuacpvdltolbeqzemiu.supabase.co/auth/v1/callback`
+2. Generate a client secret; copy the Client ID and secret into Supabase → Sign In / Providers → **GitHub**, and enable it.
+
+The client secrets go only into the Supabase dashboard. Never into the app, the repo or chat.
+
+**Testing.** The local copy can't run Google or GitHub sign-in without a second set of OAuth apps, so the buttons are
+built and checked locally (layout, error messages), then you try both on the live site after deploying, with your own
+accounts.
