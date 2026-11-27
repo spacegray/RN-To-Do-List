@@ -1,6 +1,6 @@
 # Phase 1 plan: accounts, database and security
 
-Status: **plan, waiting for approval.** Nothing here is built yet. Supabase project is connected (`npm run supabase:check`).
+Status: **1a done** (tables, access rules and purge applied to the project; 17 database tests pass with `npm run db:test`). Next: 1b.
 
 ## Goal
 
@@ -91,7 +91,7 @@ in phase 7, when the admin panel exists.
 
 | Step | What | Ease |
 |---|---|---|
-| 1a | Supabase CLI, migrations for the five tables, access rules, triggers (new user → profile, settings and a "Tasks" list; `updated_at` stamps), generated types | 🟡 |
+| 1a | **Done.** Supabase CLI, migrations for the five tables, access rules, triggers (new user → profile, settings and a "Tasks" list; `updated_at` stamps), generated types, 17 database tests | 🟡 |
 | 1b | Email-link sign-in, account button and sheets, sign out | 🟢 |
 | 1c | Sync engine and first-sign-in merge, with unit tests | 🟡 / 🔴 |
 | 1d | Google and GitHub sign-in | 🟢 (plus your setup in Google and GitHub) |
@@ -100,6 +100,6 @@ in phase 7, when the admin panel exists.
 
 ## What you'll need to do
 
-- Log the Supabase CLI in once (`npx supabase login` opens your browser) and enter the database password when linking.
+- Done: Supabase CLI logged in and linked; Docker (OrbStack) installed for the local copy.
 - Later steps: create the Google and GitHub OAuth apps, a free Cloudflare Turnstile key, and add two values to Vercel.
   I'll give exact steps at each one.
