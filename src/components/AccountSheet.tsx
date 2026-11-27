@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, type TextInputInstance } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View, type TextInputInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bouncy } from './Bouncy';
-import { Close, LogOut, Mail, Pencil } from './Icons';
+import { Close, GitHub, GoogleG, LogOut, Mail, Pencil } from './Icons';
 import { useTheme } from '../theme/useTheme';
 import { font, radius, stroke, type } from '../theme/tokens';
 import { useAuth } from '../store/auth';
 import { resolveConflict, syncNow, useSync, type SyncStatus } from '../store/sync';
 import { useUI } from '../store/ui';
-import { cleanCode, initials, isEmail } from '../lib/authText';
+import { cleanCode, initials, isEmail, providerName } from '../lib/authText';
 
 const CODE = 6;
 const RESEND_AFTER = 60_000;
@@ -20,10 +20,19 @@ export function Avatar({ size = 40, dot = false }: { size?: number; dot?: boolea
   const c = useTheme();
   const profile = useAuth((s) => s.profile);
   const email = useAuth((s) => s.session?.user.email);
+  const meta = useAuth((s) => s.session?.user.user_metadata) as { avatar_url?: string; picture?: string } | undefined;
   const status = useSync((s) => s.status);
+  // a Google or GitHub photo when there is one; initials otherwise, or if the photo fails to load
+  const photo = profile?.avatar_url || meta?.avatar_url || meta?.picture || null;
+  const [broken, setBroken] = useState<string | null>(null);
   return (
     <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2, borderColor: c.edge, backgroundColor: c.lime }]}>
-      <Text style={[styles.avatarText, { color: c.onAccent, fontSize: size * 0.36 }]}>{initials(profile?.display_name, email)}</Text>
+      {photo && broken !== photo ? (
+        <Image source={{ uri: photo }} onError={() => setBroken(photo)} accessibilityIgnoresInvertColors
+          style={{ width: size - 4, height: size - 4, borderRadius: (size - 4) / 2 }} />
+      ) : (
+        <Text style={[styles.avatarText, { color: c.onAccent, fontSize: size * 0.36 }]}>{initials(profile?.display_name, email)}</Text>
+      )}
       {dot ? <View style={[styles.dot, { borderColor: c.edge, backgroundColor: DOT[status] }]} aria-hidden /> : null}
     </View>
   );
@@ -90,8 +99,9 @@ function Conflict({ counts }: { counts: { tasks: number; notes: number } }) {
 
 function SignIn() {
   const c = useTheme();
-  const { sendCode, busy, error, closeSheet } = useAuth();
+  const { sendCode, busy, error, closeSheet, providers, loadProviders, signInWith } = useAuth();
   const [email, setEmail] = useState(useAuth.getState().email);
+  useEffect(() => { void loadProviders(); }, [loadProviders]);
   const [touched, setTouched] = useState(false);
   const valid = isEmail(email);
   const submit = () => { setTouched(true); if (valid && !busy) void sendCode(email); };
@@ -100,6 +110,25 @@ function SignIn() {
     <>
       <Text style={[type.title, { color: c.ink }]} accessibilityRole="header">Take your lists anywhere</Text>
       <Text style={[styles.sub, { color: c.muted }]}>Sign in to save your tasks, notes and colours. No password needed.</Text>
+      {error ? (
+        <View style={[styles.alert, { borderColor: c.danger }]} accessibilityLiveRegion="polite">
+          <Text style={[styles.small, { color: c.danger }]}>{error}</Text>
+        </View>
+      ) : null}
+      {providers.map((p) => (
+        <Bouncy key={p} accessibilityRole="button" aria-disabled={busy} onPress={() => { void signInWith(p); }}
+          style={[styles.primary, styles.provider, { borderColor: c.edge, backgroundColor: c.card }]}>
+          {p === 'google' ? <GoogleG size={18} /> : <GitHub size={19} color={c.ink} />}
+          <Text style={[styles.primaryText, { color: c.ink }]}>Continue with {providerName(p)}</Text>
+        </Bouncy>
+      ))}
+      {providers.length ? (
+        <View style={styles.or} aria-hidden>
+          <View style={[styles.orLine, { backgroundColor: c.muted }]} />
+          <Text style={[styles.small, { color: c.muted }]}>or</Text>
+          <View style={[styles.orLine, { backgroundColor: c.muted }]} />
+        </View>
+      ) : null}
       <TextInput
         value={email}
         onChangeText={setEmail}
@@ -117,7 +146,6 @@ function SignIn() {
         style={[styles.field, { color: c.ink, borderColor: c.edge, backgroundColor: c.card }, noOutline]}
       />
       {touched && !valid ? <Text style={[styles.msg, { color: c.danger }]} accessibilityLiveRegion="polite">Enter an email address like you@example.com.</Text> : null}
-      {error ? <Text style={[styles.msg, { color: c.danger }]} accessibilityLiveRegion="polite">{error}</Text> : null}
       <Bouncy accessibilityRole="button" aria-disabled={busy} onPress={submit} style={[styles.primary, { borderColor: c.edge, backgroundColor: c.lime }]}>
         <Mail size={18} color={c.onAccent} />
         <Text style={[styles.primaryText, { color: c.onAccent }]}>{busy ? 'Sending…' : 'Email me a sign-in link'}</Text>
@@ -236,7 +264,9 @@ function Account() {
               <Pencil size={15} color={c.muted} />
             </Bouncy>
           </View>
-          <Text style={[styles.small, { color: c.muted }]} numberOfLines={1}>{session?.user.email}</Text>
+          <Text style={[styles.small, { color: c.muted }]} numberOfLines={1}>
+            {session?.user.email} · {providerName(session?.user.app_metadata?.provider as string | undefined)}
+          </Text>
         </View>
       </View>
       {error ? <Text style={[styles.msg, { color: c.danger }]}>{error}</Text> : null}
@@ -318,6 +348,10 @@ const styles = StyleSheet.create({
   name: { flex: 1, fontFamily: font.black, fontSize: 18, paddingVertical: 2 },
   note: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 14, padding: 12, marginTop: 16, marginBottom: 2 },
   avatar: { borderWidth: stroke, alignItems: 'center', justifyContent: 'center' },
+  provider: { marginTop: 0, marginBottom: 8 },
+  alert: { borderWidth: 1.5, borderRadius: 12, padding: 10, marginBottom: 12 },
+  or: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4, marginBottom: 12 },
+  orLine: { flex: 1, height: 1.5, opacity: 0.4 },
   dot: { position: 'absolute', right: -3, bottom: -3, width: 12, height: 12, borderRadius: 6, borderWidth: 2 },
   syncRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   syncDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5 },

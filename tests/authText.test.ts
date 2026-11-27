@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { authErrorText, cleanCode, initials, isEmail } from '../src/lib/authText.ts';
+import { authErrorText, cleanCode, initials, isEmail, oauthReturnError, providerName, withoutAuthParams } from '../src/lib/authText.ts';
 
 test('isEmail accepts ordinary addresses and trims spaces', () => {
   assert.equal(isEmail('ana@example.com'), true);
@@ -35,4 +35,18 @@ test('authErrorText gives plain messages for common errors', () => {
   assert.match(authErrorText({ code: 'email_address_invalid' }), /looks wrong/);
   assert.match(authErrorText({ name: 'AuthRetryableFetchError', message: 'Failed to fetch' }), /connection/);
   assert.match(authErrorText({ code: 'something_new' }), /Something went wrong/);
+});
+
+test('a cancelled Google or GitHub sign-in reads as cancelled, other failures as not working', () => {
+  assert.match(oauthReturnError('?error=access_denied&error_description=User+denied', '', 'google')!, /^Google sign-in was cancelled/);
+  assert.match(oauthReturnError('', '#error=server_error&error_code=unexpected_failure', 'github')!, /^GitHub sign-in didn't work/);
+  assert.match(oauthReturnError('?error=access_denied&error_code=otp_expired', '', null)!, /expired/);
+  assert.equal(oauthReturnError('?code=abc', '', 'google'), null);
+});
+
+test('withoutAuthParams cleans sign-in leftovers from the address and keeps the rest', () => {
+  assert.equal(withoutAuthParams('https://daypad.vercel.app/?error=access_denied&error_description=x&tab=notes'), 'https://daypad.vercel.app/?tab=notes');
+  assert.equal(withoutAuthParams('https://daypad.vercel.app/#error=server_error&error_code=y'), 'https://daypad.vercel.app/');
+  assert.equal(providerName('github'), 'GitHub');
+  assert.equal(providerName(undefined), 'Email');
 });

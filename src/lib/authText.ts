@@ -38,3 +38,31 @@ export function authErrorText(error: AuthErrorLike): string {
   }
   return 'Something went wrong. Try again.';
 }
+
+export type Provider = 'google' | 'github';
+export const providerName = (p: string | null | undefined) =>
+  p === 'google' ? 'Google' : p === 'github' ? 'GitHub' : p === 'email' ? 'Email' : p ? p[0].toUpperCase() + p.slice(1) : 'Email';
+
+/**
+ * Reads an error that Google or GitHub (via Supabase) sent back in the address after a sign-in attempt, from the
+ * query (`?error=...`) or the hash (`#error=...`). Returns a plain message, or null when there's no error.
+ */
+export function oauthReturnError(search: string, hash: string, provider: string | null): string | null {
+  const params = new URLSearchParams(search.replace(/^\?/, ''));
+  const fromHash = new URLSearchParams(hash.replace(/^#/, ''));
+  const error = params.get('error') ?? fromHash.get('error');
+  if (!error) return null;
+  const code = params.get('error_code') ?? fromHash.get('error_code') ?? '';
+  const name = providerName(provider) === 'Email' ? 'That' : providerName(provider);
+  if (error === 'access_denied' && !/expired/i.test(code)) return `${name} sign-in was cancelled. Try again, or use your email.`;
+  if (/expired/i.test(code)) return 'That sign-in link has expired. Send a new one.';
+  return `${name} sign-in didn't work. Try again, or use your email.`;
+}
+
+/** The address with any sign-in error parameters removed, for cleaning up the address bar. */
+export function withoutAuthParams(href: string): string {
+  const url = new URL(href);
+  for (const k of ['error', 'error_code', 'error_description', 'code', 'state']) url.searchParams.delete(k);
+  if (/(^#|&)error=/.test(url.hash) || /access_token=/.test(url.hash)) url.hash = '';
+  return url.toString();
+}

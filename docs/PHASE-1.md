@@ -1,6 +1,6 @@
 # Phase 1 plan: accounts, database and security
 
-Status: **1a, 1b and 1c done** (1c tested against the local copy: upgrade to UUIDs with two tabs open, sending, pulling edits and deletes, second device, settings both ways, offline and back, a second account on the same device). Next: 1d.
+Status: **1a–1d done** (1d built and checked locally; Google and GitHub need their apps set up, then a live test) (1c tested against the local copy: upgrade to UUIDs with two tabs open, sending, pulling edits and deletes, second device, settings both ways, offline and back, a second account on the same device). Next: 1d.
 
 ## Goal
 
@@ -94,7 +94,7 @@ in phase 7, when the admin panel exists.
 | 1a | **Done.** Supabase CLI, migrations for the five tables, access rules, triggers (new user → profile, settings and a "Tasks" list; `updated_at` stamps), generated types, 17 database tests | 🟡 |
 | 1b | **Done.** Email link and code sign-in, account button and sheets, name change, sign out | 🟢 |
 | 1c | **Done.** Sync engine and first-sign-in merge, with unit tests | 🟡 / 🔴 |
-| 1d | Google and GitHub sign-in | 🟢 (plus your setup in Google and GitHub) |
+| 1d | **Built.** Google and GitHub sign-in (buttons appear once each is switched on in Supabase) | 🟢 (plus your setup in Google and GitHub) |
 | 1e | Privacy and terms pages, Turnstile, export data, delete account | 🟡 |
 | 1f | Add the Supabase values to Vercel, deploy, nightly backups, `SECURITY.md` | 🟢 |
 
