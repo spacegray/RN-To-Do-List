@@ -91,7 +91,7 @@ export function Header({ label, title, accent }: { label: string; title?: string
           {isSupabaseConfigured && authReady ? (
             signedIn ? (
               <Bouncy accessibilityRole="button" accessibilityLabel="Your account" onPress={openAccount} hitSlop={4}>
-                <Avatar size={minTap} />
+                <Avatar size={minTap} dot />
               </Bouncy>
             ) : (
               <IconButton label="Sign in" onPress={openAccount}>

@@ -7,6 +7,7 @@ import { Close, LogOut, Mail, Pencil } from './Icons';
 import { useTheme } from '../theme/useTheme';
 import { font, radius, stroke, type } from '../theme/tokens';
 import { useAuth } from '../store/auth';
+import { resolveConflict, syncNow, useSync, type SyncStatus } from '../store/sync';
 import { useUI } from '../store/ui';
 import { cleanCode, initials, isEmail } from '../lib/authText';
 
@@ -15,14 +16,75 @@ const RESEND_AFTER = 60_000;
 const noOutline = Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null;
 
 /** Initials in a lime circle: the toolbar's account button when signed in, and the account sheet's header. */
-export function Avatar({ size = 40 }: { size?: number }) {
+export function Avatar({ size = 40, dot = false }: { size?: number; dot?: boolean }) {
   const c = useTheme();
   const profile = useAuth((s) => s.profile);
   const email = useAuth((s) => s.session?.user.email);
+  const status = useSync((s) => s.status);
   return (
     <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2, borderColor: c.edge, backgroundColor: c.lime }]}>
       <Text style={[styles.avatarText, { color: c.onAccent, fontSize: size * 0.36 }]}>{initials(profile?.display_name, email)}</Text>
+      {dot ? <View style={[styles.dot, { borderColor: c.edge, backgroundColor: DOT[status] }]} aria-hidden /> : null}
     </View>
+  );
+}
+
+const DOT: Record<SyncStatus, string> = { idle: '#2BB673', syncing: '#F2B233', pending: '#F2B233', offline: '#B4B2A9', error: '#D93A33' };
+
+function ago(at: number | null, now: number) {
+  if (!at) return 'Not synced yet';
+  const s = Math.round((now - at) / 1000);
+  if (s < 45) return 'Synced just now';
+  const m = Math.round(s / 60);
+  return m < 60 ? `Synced ${m} min ago` : `Synced at ${new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+}
+
+/** The account sheet's sync line: what's happening, and a retry when it failed. */
+function SyncLine() {
+  const c = useTheme();
+  const status = useSync((s) => s.status);
+  const last = useSync((s) => s.lastSyncedAt);
+  const [now, setNow] = useState(last ?? 0);
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(t);
+  }, []);
+  const text = status === 'syncing' || status === 'pending' ? 'Syncing…'
+    : status === 'offline' ? "Offline. Changes will sync when you're back."
+    : status === 'error' ? "Couldn't sync"
+    : ago(last, Math.max(now, last ?? 0));
+  const bad = status === 'error';
+  return (
+    <View style={[styles.note, styles.syncRow, { borderColor: bad ? c.danger : c.muted }]} accessibilityLiveRegion="polite">
+      <View style={[styles.syncDot, { borderColor: c.edge, backgroundColor: DOT[status] }]} aria-hidden />
+      <Text style={[styles.small, { color: bad ? c.danger : c.ink, flex: 1 }]}>{text}</Text>
+      {bad || status === 'offline' ? (
+        <Bouncy accessibilityRole="button" hitSlop={8} onPress={() => { void syncNow(); }}>
+          <Text style={[styles.small, styles.underline, { color: bad ? c.danger : c.ink }]}>Try again</Text>
+        </Bouncy>
+      ) : null}
+    </View>
+  );
+}
+
+/** This device holds another account's things: add them here, or start fresh. */
+function Conflict({ counts }: { counts: { tasks: number; notes: number } }) {
+  const c = useTheme();
+  const n = (k: number, w: string) => `${k} ${w}${k === 1 ? '' : 's'}`;
+  return (
+    <>
+      <Text style={[type.title, { color: c.ink }]} accessibilityRole="header">{"This device has someone else's stuff"}</Text>
+      <Text style={[styles.sub, { color: c.muted }]}>
+        It has {n(counts.tasks, 'task')} and {n(counts.notes, 'note')} from another account. Add them to your account, or start fresh?
+      </Text>
+      <Bouncy accessibilityRole="button" onPress={() => resolveConflict('add')} style={[styles.primary, { borderColor: c.edge, backgroundColor: c.lime }]}>
+        <Text style={[styles.primaryText, { color: c.onAccent }]}>Add them to my account</Text>
+      </Bouncy>
+      <Bouncy accessibilityRole="button" onPress={() => resolveConflict('fresh')} style={[styles.primary, { borderColor: c.edge, backgroundColor: c.card }]}>
+        <Text style={[styles.primaryText, { color: c.ink }]}>Start fresh</Text>
+      </Bouncy>
+      <Text style={[styles.small, { color: c.muted, marginTop: 10 }]}>Start fresh can be undone right after.</Text>
+    </>
   );
 }
 
@@ -178,9 +240,7 @@ function Account() {
         </View>
       </View>
       {error ? <Text style={[styles.msg, { color: c.danger }]}>{error}</Text> : null}
-      <View style={[styles.note, { borderColor: c.muted }]}>
-        <Text style={[styles.small, { color: c.muted }]}>Saving your tasks and notes to your account starts with the next update.</Text>
-      </View>
+      <SyncLine />
       <Bouncy accessibilityRole="button" aria-disabled={busy}
         onPress={() => { void signOut().then(() => showToast({ message: 'Signed out. Everything is still on this device.' })); }}
         style={[styles.primary, { borderColor: c.edge, backgroundColor: c.card }]}>
@@ -197,6 +257,7 @@ function Sheet() {
   const insets = useSafeAreaInsets();
   const sheet = useAuth((s) => s.sheet);
   const close = useAuth((s) => s.closeSheet);
+  const conflict = useSync((s) => s.conflict);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -220,7 +281,7 @@ function Sheet() {
           <Bouncy accessibilityRole="button" accessibilityLabel="Close" hitSlop={8} onPress={close} style={[styles.close, { borderColor: c.edge }]}>
             <Close size={16} color={c.ink} />
           </Bouncy>
-          {sheet === 'signin' ? <SignIn /> : sheet === 'code' ? <CodeStep /> : <Account />}
+          {conflict && sheet === 'account' ? <Conflict counts={conflict} /> : sheet === 'signin' ? <SignIn /> : sheet === 'code' ? <CodeStep /> : <Account />}
         </Animated.View>
       </KeyboardAvoidingView>
     </View>
@@ -257,5 +318,8 @@ const styles = StyleSheet.create({
   name: { flex: 1, fontFamily: font.black, fontSize: 18, paddingVertical: 2 },
   note: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 14, padding: 12, marginTop: 16, marginBottom: 2 },
   avatar: { borderWidth: stroke, alignItems: 'center', justifyContent: 'center' },
+  dot: { position: 'absolute', right: -3, bottom: -3, width: 12, height: 12, borderRadius: 6, borderWidth: 2 },
+  syncRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  syncDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5 },
   avatarText: { fontFamily: font.black },
 });

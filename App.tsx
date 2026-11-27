@@ -22,6 +22,7 @@ import { Footer, FooterToggle, FOOTER_H } from './src/components/Footer';
 import { Landing } from './src/components/Landing';
 import { HeroPanel } from './src/components/HeroPanel';
 import { AccountSheetHost } from './src/components/AccountSheet';
+import './src/store/sync'; // starts background sync when Supabase is configured
 import { Toast } from './src/components/Toast';
 import { HelpTour } from './src/components/HelpTour';
 import { ThemeReveal } from './src/components/ThemeReveal';

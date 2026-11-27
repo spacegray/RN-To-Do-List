@@ -1,6 +1,6 @@
 # Phase 1 plan: accounts, database and security
 
-Status: **1a and 1b done** (1b tested against the local copy: email code and link sign-in, name change, reload, sign out). **1c planned, waiting for approval.**
+Status: **1a, 1b and 1c done** (1c tested against the local copy: upgrade to UUIDs with two tabs open, sending, pulling edits and deletes, second device, settings both ways, offline and back, a second account on the same device). Next: 1d.
 
 ## Goal
 
@@ -93,7 +93,7 @@ in phase 7, when the admin panel exists.
 |---|---|---|
 | 1a | **Done.** Supabase CLI, migrations for the five tables, access rules, triggers (new user → profile, settings and a "Tasks" list; `updated_at` stamps), generated types, 17 database tests | 🟡 |
 | 1b | **Done.** Email link and code sign-in, account button and sheets, name change, sign out | 🟢 |
-| 1c | Sync engine and first-sign-in merge, with unit tests | 🟡 / 🔴 |
+| 1c | **Done.** Sync engine and first-sign-in merge, with unit tests | 🟡 / 🔴 |
 | 1d | Google and GitHub sign-in | 🟢 (plus your setup in Google and GitHub) |
 | 1e | Privacy and terms pages, Turnstile, export data, delete account | 🟡 |
 | 1f | Add the Supabase values to Vercel, deploy, nightly backups, `SECURITY.md` | 🟢 |
@@ -195,3 +195,13 @@ reminder notification IDs and "already fired" flags, the calculator's working ta
 
 **After 1c:** the app is safe to deploy (your own email can sign in with the standard Supabase emails); step 1f adds the
 Vercel settings and the proper email sender for everyone else.
+
+### 1c notes from testing
+
+- Two open tabs share one browser's storage, so the one-time ID upgrade must give the same IDs in both: new IDs are
+  worked out from the old ones (`stableUuid`), never random.
+- Sync waits until every saved store has loaded; starting earlier sent the starter tasks instead of the saved ones.
+- Sync messages wait for the landing page to close, or they'd be hidden behind it.
+- With the connection gone, the Supabase library retries for about 15 seconds before the status changes to "Offline".
+- Not tested yet: "Add them to my account" (same path as a first sign-in, which is tested), and phone notifications for
+  reminders that arrive from another device (needs a phone build).

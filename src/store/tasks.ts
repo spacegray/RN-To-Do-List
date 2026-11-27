@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { uid } from './storage';
+import { uuid } from './storage';
+import { withUuids } from '../lib/sync';
 import { persisted } from './persist';
 import { parseTask, type Priority } from '../lib/parseTask';
 import { cancelReminder, scheduleReminder } from '../lib/reminders';
@@ -16,6 +17,10 @@ export type Task = {
   completedAt: number | null;
   notifId: string | null;
   fired: boolean;
+  /** last change that should sync (ms); the newest change wins */
+  changedAt: number;
+  /** one of Daypad's starter tasks */
+  sample?: boolean;
 };
 
 export type TaskFilter = 'all' | 'today' | 'done';
@@ -36,6 +41,7 @@ type TasksState = {
 };
 
 const order: Priority[] = ['normal', 'high', 'low'];
+const SAMPLE_TITLES = ['Send the café invoice', 'Pick up film from the lab', 'Try the "?" button for a tour', 'Morning run, 5 km'];
 
 const seed = (): Task[] => {
   const now = Date.now();
@@ -44,12 +50,12 @@ const seed = (): Task[] => {
     if (d.getTime() < now) d.setDate(d.getDate() + 1);
     return d.getTime();
   };
-  const base = { completedAt: null, notifId: null, fired: false, createdAt: now };
+  const base = { completedAt: null, notifId: null, fired: false, createdAt: now, changedAt: now, sample: true };
   return [
-    { ...base, id: uid(), title: 'Send the café invoice', done: false, due: at(14), tag: 'work', priority: 'high' },
-    { ...base, id: uid(), title: 'Pick up film from the lab', done: false, due: null, tag: 'errands', priority: 'normal' },
-    { ...base, id: uid(), title: 'Try the "?" button for a tour', done: false, due: null, tag: null, priority: 'low' },
-    { ...base, id: uid(), title: 'Morning run, 5 km', done: true, due: null, tag: 'health', priority: 'normal', completedAt: now },
+    { ...base, id: uuid(), title: 'Send the café invoice', done: false, due: at(14), tag: 'work', priority: 'high' },
+    { ...base, id: uuid(), title: 'Pick up film from the lab', done: false, due: null, tag: 'errands', priority: 'normal' },
+    { ...base, id: uuid(), title: 'Try the "?" button for a tour', done: false, due: null, tag: null, priority: 'low' },
+    { ...base, id: uuid(), title: 'Morning run, 5 km', done: true, due: null, tag: 'health', priority: 'normal', completedAt: now },
   ];
 };
 
@@ -65,8 +71,8 @@ export const useTasks = create<TasksState>()(
         if (!text) return null; // the original app saved blank tasks
         const p = parseTask(text);
         const task: Task = {
-          id: uid(), title: p.title, done: false, due: p.due, tag: p.tag, priority: p.priority,
-          createdAt: Date.now(), completedAt: null, notifId: null, fired: false,
+          id: uuid(), title: p.title, done: false, due: p.due, tag: p.tag, priority: p.priority,
+          createdAt: Date.now(), changedAt: Date.now(), completedAt: null, notifId: null, fired: false,
         };
         set((s) => ({ tasks: [task, ...s.tasks] }));
         if (task.due) {
@@ -83,19 +89,19 @@ export const useTasks = create<TasksState>()(
             if (t.id !== id) return t;
             const done = !t.done;
             if (done && t.notifId) cancelReminder(t.notifId);
-            return { ...t, done, completedAt: done ? Date.now() : null, notifId: done ? null : t.notifId };
+            return { ...t, done, completedAt: done ? Date.now() : null, notifId: done ? null : t.notifId, changedAt: Date.now() };
           }),
         })),
 
       rename: (id, title) => {
         const clean = title.trim();
         if (!clean) return;
-        set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, title: clean } : t)) }));
+        set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, title: clean, changedAt: Date.now() } : t)) }));
       },
 
       cyclePriority: (id) =>
         set((s) => ({
-          tasks: s.tasks.map((t) => (t.id === id ? { ...t, priority: order[(order.indexOf(t.priority) + 1) % order.length] } : t)),
+          tasks: s.tasks.map((t) => (t.id === id ? { ...t, priority: order[(order.indexOf(t.priority) + 1) % order.length], changedAt: Date.now() } : t)),
         })),
 
       remove: (id) => {
@@ -111,7 +117,8 @@ export const useTasks = create<TasksState>()(
         if (!last) return;
         set((s) => {
           const tasks = [...s.tasks];
-          tasks.splice(Math.min(last.index, tasks.length), 0, last.task);
+          // a fresh stamp, so the restore wins over a delete that may already have synced
+          tasks.splice(Math.min(last.index, tasks.length), 0, { ...last.task, changedAt: Date.now() });
           return { tasks, lastDeleted: null };
         });
       },
@@ -125,7 +132,18 @@ export const useTasks = create<TasksState>()(
       setFilter: (filter) => set({ filter }),
       markFired: (id) => set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, fired: true } : t)) })),
     }),
-    persisted('tasks', { version: 1, partialize: (s) => ({ tasks: s.tasks, filter: s.filter }) }),
+    persisted('tasks', {
+      version: 2,
+      partialize: (s) => ({ tasks: s.tasks, filter: s.filter }),
+      // v2: UUIDs and change stamps for sync; the starter tasks are recognised by title
+      migrate: (saved) => {
+        const v = (saved ?? {}) as { tasks?: Task[]; filter?: TaskFilter };
+        const tasks = Array.isArray(v.tasks)
+          ? withUuids(v.tasks).map((t) => ({ ...t, changedAt: t.changedAt ?? t.createdAt, sample: t.sample ?? SAMPLE_TITLES.includes(t.title) }))
+          : seed();
+        return { tasks, filter: v.filter ?? 'all' };
+      },
+    }),
   ),
 );
 
