@@ -1,6 +1,6 @@
 # Daypad roadmap
 
-Last updated: November 27, 2026. Planning only: nothing below is built unless marked **Done**.
+Last updated: November 27, 2026 (added frills, the Grindstone, the bird button and Moon mode). Planning only: nothing below is built unless marked **Done**.
 Every phase gets a mockup and a plan before it's built.
 
 **Ease:** 🟢 easy · 🟡 medium · 🔴 hard (outside approvals, missing APIs, or a lot of work)
@@ -68,6 +68,7 @@ Other databases considered: Neon + Drizzle + Clerk (more pieces to wire), Fireba
 | Onboarding: goals (get organized, track dreams, split bills, fun calculator) | 🟢 | Sets the first screen and featured tools |
 | Use for work, school, personal (any mix) | 🟡 | Work: priorities, Outlook/Teams calendar, meeting notes, paste an email to make tasks. School: lists per class, assignment due dates, exam countdowns, study timer, scientific calculator. Personal: grocery/packing/gift lists, journal, bill splitter, celebrations |
 | Look and feel: low stimulation, balanced, high energy, minimal/zen | 🟢 | |
+| "No frills" switch | 🟢 | Turns off every character animation and joke (see [Phase 3.5](#phase-35-frills-characters-and-jokes)); low stimulation and minimal/zen turn it on by default |
 | Reminder style: gentle, standard, in your face | 🟢 | Quiet hours always apply |
 | Task-help slider (1–5) | 🟢 | From "stay out of my way" to break-downs and one-task focus mode |
 | Optional "what helps you" presets (ADHD, dyslexia, autism, Type A, neurotypical) | 🟡 | Ask about needs before diagnoses; private, encrypted, never in analytics |
@@ -93,6 +94,31 @@ Other databases considered: Neon + Drizzle + Clerk (more pieces to wire), Fireba
 | Send tasks to any calendar as a file | 🟢 | `.ics`, Google and Outlook "add event" links |
 | Visual focus timer | 🟢 | |
 | Read aloud | 🟢 | Built-in browser and phone voices |
+| Moon mode: moon phase, plus warnings when a planet is in retrograde ("Mercury retrograde starts Tuesday. Double-check that email.") | 🟢 | `astronomy-engine` library (free, works offline) works out phases and retrogrades; no API needed. Off by default, for fun; pairs with the horoscope |
+
+### Phase 3.5: frills (characters and jokes)
+
+Optional animations that ride on features that already exist or are planned. The app keeps its name; the
+characters are the personality. Everything here is original art (no real superheroes, logos or celebrity GIFs),
+built with **Rive** (free plan, web and phones; reacts to app events) or Lottie as a simpler fallback.
+
+**When frills stay off:** the "No frills" switch is on, the device asks for reduced motion, battery saver is on, or
+the device is too slow (the app checks frame rate and falls back to a plain check mark). Nothing breaks either way.
+
+| Frill | Rides on | What it does | Ease |
+|---|---|---|---|
+| **Chop Chop** (ninja) | Paste a paragraph → tasks (phase 6), task break-downs | Listens to your pasted email or rant, then karate-chops it into tasks | 🟡 |
+| **Nagatha** (diva coach) | Reminders, "in your face" level (phase 5) | Dramatic nags: "Darling. The invoice. It's been three days." | 🟡 |
+| **Zen** (calm monk) | Low-stimulation mode, finished tasks | A slow nod and a quiet check mark; the only character low-stim users see unless they pick another | 🟢 |
+| **Captain Strikethrough** | Finished list (celebration, phase 3) | Swoops in and slashes the list with a giant red marker-sword | 🟡 |
+| **The Hype Squad** | Finished list, streaks | Points at the screen: "You're awesome." | 🟡 |
+| **The Grindstone** | Focus mode and timer (phase 3), big-task break-downs (phase 6) | One task on screen while your hero sharpens their blade; or drop a big scary project on the stone and it comes off as small, sharp tasks | 🟡 |
+| **Put a bird on it** button | Any task, list or note | Slaps a bird on it, wobbles, and marks it extra awesome (a little sparkle and a ★ in the list); tap again to remove. Bird drawn in-house, a few variations | 🟢 |
+
+- Users pick their sidekick in onboarding (phase 2), and can turn each character on or off in Settings.
+- Characters follow the stimulation setting: high energy gets the full show, balanced gets short versions, low stimulation gets Zen or nothing.
+- Avoid "superhero" in names and marketing (Marvel and DC may still hold a "Super Heroes" trademark).
+- "Put a bird on it" is a well-known comedy catchphrase; short phrases can't be copyrighted, but keep the bird art our own.
 
 ### Phase 4: calendar
 
@@ -156,6 +182,7 @@ See [Tiers and Stripe](#tiers-and-stripe). Adds a subscribers view to the admin 
 | Photos and screenshots in notes | 🟡 | File picker, paste, drag and drop; camera and library on phones; shrunk before upload; Supabase Storage (Plus storage limit) |
 | Free image library | 🟢 | Unsplash or Pexels, with photographer credit |
 | Dream journal as its own app | — | Not now; kept separate in the code so it can split off later |
+| App name | — | Keeping **Daypad**. Researched Smart Planner, Capeable, Chop Chop, Nag & Brag, Grindstone and others; the campy ideas became characters (phase 3.5) instead |
 
 ### Phase 9: calculator suite
 
